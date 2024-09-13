@@ -15,7 +15,8 @@ const schema = joi.object({
 
 const router = express.Router();
 
-router.post("/api/user", async (req, res, next) => {
+// 회원 가입
+router.post("/user", async (req, res, next) => {
   const { id, password } = req.body;
 
   try {
@@ -32,33 +33,30 @@ router.post("/api/user", async (req, res, next) => {
      return res.status(400).json({errorMessage: '중복된 이름입니다.'});
   }
 
-  const hashedPassword = bcrypt.hash(password, 7);
+  const hashedPassword = bcrypt.hash(password, 15);
   const newUser = await prisma.user.create({
     data:{
         id: id,
         password: hashedPassword,
     },
-    select: {
-         id: id,
-    }
   })
 
-  return res.status(201).json({message:`피파 온라인에 오신걸 환영합니다. ${newUser}님`});
+  return res.status(201).json({message:`피파 온라인에 오신걸 환영합니다. ${newUser.id}님`});
 });
 
-
-router.post('/api/user/login', async (req,res,next) => {
+// 로그인 기능
+router.post('/user/login', async (req,res,next) => {
     const {id,password} = req.body;
 
-    const isUser = await prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
         where: {id: id},
     })
 
-    if(!isUser) {
+    if(!user) {
         return res.status(400).json({errorMessage: '해당하는 유저가 존재하지 않습니다.'});
     }
 
-    if (!(await bcrypt.compare(password, isUser.password))) {
+    if (!(await bcrypt.compare(password, user.password))) {
         return res
             .status(401)
             .json({ message: "비밀번호가 일치하지 않습니다." });
@@ -70,6 +68,6 @@ router.post('/api/user/login', async (req,res,next) => {
 
     res.header("Authorization", `Bearer ${accessToken}`);
 
-    return res.status(200).json({message: `${isUser.id}님이 로그인하셨습니다.`});
+    return res.status(200).json({message: `${user.id}님이 로그인하셨습니다.`});
 })
 export default router;

@@ -6,6 +6,10 @@
   "author": "SSA <158470963+shinseongan@users.noreply.github.com>",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
   "dependencies": {
     "@prisma/client": "^5.19.1",
     "bcrypt": "^5.1.1",

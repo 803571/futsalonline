@@ -35,7 +35,7 @@ model Accounts {
   // Accounts : Teams => 1 : 1
   Team Teams?
   // Accounts : Rankings => 1 : 1
-  ranking Ranking?
+  ranking Rankings?
   // Accounts : CashDatasets => 1 : N
   cashDatasets CashDatasets[]
   // Accounts : PlayRecords => 1 : N
@@ -46,7 +46,7 @@ model Accounts {
 
 model Teams {
   teamId        Int      @id @default(autoincrement()) @map("teamId")
-  userId        String   @map("userId") // Accounts 테이블 참조 FK
+  userId        String   @unique @map("userId") // Accounts 테이블 참조 FK
   playerId      Int      @map("playerId") // Players 테이블 참조 FK
   teamPower     Int      @map("teamPower") // 팀 능력치 합산
 

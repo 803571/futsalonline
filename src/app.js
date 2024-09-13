@@ -6,7 +6,7 @@ import ErrorHandlingMiddleware from './middlewares/error-handling.middleware.js'
 dotenv.config();
 
 const app = express();
-const PORT = 3020;
+const PORT = 3333;
 
 app.use(LogMiddleware);
 app.use(express.json());

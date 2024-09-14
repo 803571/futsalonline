@@ -116,8 +116,7 @@ model GameRankings {
   rankingId       Int     @id @default(autoincrement()) @map("rankingId")
   accountId       Int     @map("accountId") // Accounts 테이블 참조 FK
   winningRate     Float   @map("winningRate") // 승률
-  record          Int     @map("record") // 랭킹 점수
-  mmr             Int     @map("mmr") // mmr
+  rankScore       Int     @map("rankScore") // 랭킹 점수
   playRecords     Json    @map("playRecords") // 경기 결과(경기 상대, 승무패, 시작 시간, 끝 시간(시작시간+1))
 
   createdAt     DateTime @default(now()) @map("createdAt")

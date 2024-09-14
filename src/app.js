@@ -1,5 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import UsersRouter from './routes/users.router.js';
+import CashRouter from './routes/cash.router.js';
 import LogMiddleware from './middlewares/log.middleware.js';
 import ErrorHandlingMiddleware from './middlewares/error-handling.middleware.js';
 
@@ -11,7 +13,7 @@ const PORT = 3333;
 app.use(LogMiddleware);
 app.use(express.json());
 
-app.use('/api', []);
+app.use('/api', [UsersRouter, CashRouter]);
 app.use(ErrorHandlingMiddleware);
 
 app.listen(PORT, () => {

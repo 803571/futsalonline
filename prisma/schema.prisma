@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Accounts {
+  accountId       Int      @id @default(autoincrement()) @map("accountId")
+  userId          String   @unique @map("userId") // 아이디
+  password        String   @map("password") // 비밀번호
+  name            String?  @map("name") // 이름
+  age             Int?     @map("age") // 나이
+
+  createdAt       DateTime @default(now()) @map("createdAt")
+  updatedAt       DateTime @updatedAt() @map("updatedAt")
+
+  // Accounts : Rosters => 1 : N
+  rosters Rosters[]
+  // Accounts : Teams => 1 : N
+  Team Teams[]
+  // Accounts : CashDatasets => 1 : N
+  cashDatasets CashDatasets[]
+  // Accounts : GameRankings => 1 : N
+  gameRankings GameRankings[]
+
+  @@map("Accounts")
+}
+
+// 선수 카드
+model Players {
+  playerId        Int      @id @default(autoincrement()) @map("playerId")
+  name            String   @unique @map("name") // 선수 이름 : 유일
+  height          Int      @map("height") // 키
+  weight          Int      @map("weight") // 몸무게
+
+  speed           Int      @map("speed") // 속력
+  acceleration    Int      @map("acceleration") // 가속력
+  shootingFinish  Int      @map("shootingFinish") // 골 결정력
+  shootingPower   Int      @map("shootingPower") // 슛 파워
+  pass            Int      @map("pass") // 패스 스탯
+  defense         Int      @map("defense") // 수비력
+  stamina         Int      @map("stamina") // 스태미너
+  agility         Int      @map("agility") // 민첩성
+  balance         Int      @map("balance") // 밸런스
+  gk              Int      @map("gk") // 골키퍼 능력
+
+  createdAt     DateTime @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt() @map("updatedAt")
+
+  // Players : Rosters => 1 : N
+  rosters Rosters[]
+  // Players : Teams => 1 : N
+  teams Teams[]
+
+  @@map("Players")
+}
+
+// 인벤토리 역할
+model Rosters {
+  rosterId      Int      @id @default(autoincrement()) @map("rosterId")
+  accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
+  playerId      Int      @map("playerId") // Players 테이블 참조 FK
+  amount        Int      @default(1) @map("amount") // 카드 개수
+
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  // Items 테이블과 관계 설정
+  player Players @relation(fields: [playerId], references: [playerId], onDelete: Cascade)
+
+  @@map("Rosters")
+}
+
+// 팀 스쿼드 : 장착 장비 테이블과 유사
+model Teams {
+  teamId        Int      @id @default(autoincrement()) @map("teamId")
+  accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
+  playerId      Int      @map("playerId") // Players 테이블 참조 FK
+  position      String   @map("position") // 포지션
+
+  createdAt     DateTime @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt() @map("updatedAt")
+
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  // Players 테이블과 관계 설정
+  player Players @relation(fields: [playerId], references: [playerId], onDelete: Cascade)
+
+  @@map("Teams")
+}
+
+model CashDatasets {
+  cashDatasetId Int      @id @default(autoincrement()) @map("cashDatasetId")
+  accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
+  amount        Int      @map("amount") // 거래 금액
+  type          String   @map("type") // 거래 유형
+  description   String   @map("description") // 거래 설명
+
+  createdAt     DateTime @default(now()) @map("createdAt")
+
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+
+  @@map("CashDatasets")
+}
+
+model GameRankings {
+  rankingId       Int     @id @default(autoincrement()) @map("rankingId")
+  accountId       Int     @map("accountId") // Accounts 테이블 참조 FK
+  winningRate     Float   @map("winningRate") // 승률
+  record          Int     @map("record") // 랭킹 점수
+  mmr             Int     @map("mmr") // mmr
+  playRecords     Json    @map("playRecords") // 경기 결과(경기 상대, 승무패, 시작 시간, 끝 시간(시작시간+1))
+
+  createdAt     DateTime @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt() @map("updatedAt")
+
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId])
+
+  @@map("GameRankings")
+}

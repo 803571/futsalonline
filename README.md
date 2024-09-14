@@ -13,10 +13,4 @@
 - [계정 API](docs/users-table.md)
 
 ## 테이블
-- [TABLE 정보](docs/table.sql)
-
-
-Feat: 새 api 기능을 추가했을 경우
-Fix: 기존 api를 수정했을 경우
-Build: 패키지, 모듈 등을 설치한 경우
-Docs: 문서, 예를들어 리드미 수정의 경우
+- [선수 데이터 추가](docs/players-add.sql)

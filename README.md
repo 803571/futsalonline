@@ -13,4 +13,4 @@
 - [계정 API](docs/users-table.md)
 
 ## 테이블
-- [선수 데이터 추가](docs/players_add.sql.sql)
+- [선수 데이터 추가](docs/players_add.sql)

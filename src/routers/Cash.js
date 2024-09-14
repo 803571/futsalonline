@@ -22,7 +22,7 @@ router.post('/cash',authSigninMiddleware, async(req,res,next) => {
     return res.status(200).json({message: '성공적으로 캐시를 구매했습니다.'});
 })
 
-// 거래 금액 내역을 조회하고 내역을 지우며 현재 남은 캐시를 cashDatasets 테이블에 저장해주는 함수입니다.
+// 거래 금액 내역을 조회하고 내역을 지우며 현재 남은 캐시를 CashDatasets 테이블에 저장해주는 함수입니다.
 async function checkandSaveCash(accountId) {
     // 금액을 저장할 변수입니다.
     let total = 10000;
@@ -33,6 +33,10 @@ async function checkandSaveCash(accountId) {
         orderBy: {createdAt: 'asc'},
     })
 
+    if(!CashTable) {
+        console.log(`현재 존재하는 캐시 로그가 없습니다.`);
+        return
+    }
    // console.log(CashTable);
 
    // 조회된 캐시로그들을 순회하며 
@@ -75,7 +79,7 @@ async function checkandSaveCash(accountId) {
 }
 
 
-// 거래 금액 내역을 조회하며 현재 남은 캐시를 cashDatasets 테이블에 저장해주는 함수입니다.
+// 거래 금액 내역을 조회하며 현재 남은 캐시를 CashDatasets 테이블에 저장해주는 함수입니다.
 async function checkandSaveCash2(accountId) {
     // 금액을 저장할 변수입니다.
     
@@ -90,26 +94,34 @@ async function checkandSaveCash2(accountId) {
         // 저장된 캐시 로그가 됨
     })
 
-    let total = saveCash.amount; // 그 캐시 값을 저장
+    let total = saveCash?saveCash.amount:10000; // 그 캐시 값을 저장
     let cashIdArr = []; // 캐시 id를 저장
 
-    const CashTable = await prisma.CashDatasets.findMany({
+    //save가 있다면 
+    const CashTable = saveCash? await prisma.CashDatasets.findMany({
         where: {
-            accountId: accountId,
-            cashDatasetId: {
-                //cash데이터 테이블에서 cashDatasetId보다 큰 값 전부를 조회하겠다.
-                gt: saveCash.cashDatasetId, 
-            }
+                accountId: accountId,
+                cashDatasetId: {
+                    //cash데이터 테이블에서 cashDatasetId보다 큰 값 전부를 조회하겠다.
+                    gt: saveCash.cashDatasetId, 
+                }
         },
         orderBy: {createdAt: 'asc'}
     })
+    : //save 값이 없다면 모든걸 조회한다.
+    await prisma.CashDatasets.findMany({
+        where: {
+                accountId: accountId,
+        },
+        orderBy: {createdAt: 'asc'}
+    }) 
 
     // 현재 갱신되어있는 값이 존재하지 않아요.
     if(!CashTable) {
         console.log('갱신할 정보가 없다.');
        return;
     }
-    
+      
    // 조회된 캐시로그들을 순회하며 
     for(let key in CashTable) {
         const {cashDatasetId, amount,type} = CashTable[key];

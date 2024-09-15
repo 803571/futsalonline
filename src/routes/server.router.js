@@ -1,12 +1,13 @@
 import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
+import fetch from 'node-fetch';
 
 const router = express.Router();
 
 let waitingUsers = []; // 매칭 대기열
 let matchServerAddress = 'http://localhost:4444/api';
 
-// 로비에서 매치 시작
+// 로비에서 매치 시작, 매칭 대기열 출력되도록 수정
 router.post('/match', async (req, res, netx) => {
   const { userId } = req.body; // 여긴 로그인 인증으로 account에서 가져오는 걸로 수정
 
@@ -62,14 +63,14 @@ router.post('/lobby-return', async (req, res, next) => {
     return res.status(400).json({ errorMessage: '두 유저가 필요합니다!' });
   }
 
-  console.log(`${users[0]}, ${users[1]} 로비 복귀.`);
+  console.log(`로비 복귀: ${users[0]}, ${users[1]}.`);
 
   // 점수 처리 시작
   /*
-   */
+  */
 
   // 로비 복귀 후 응답
-  res.status(200).res.json({ message: '로비 복귀!', users });
+  res.status(200).json({ message: '로비 복귀!', users });
 });
 
 // 게임 시작 API - 1분 후 자동 게임 종료
@@ -81,11 +82,10 @@ router.post('/game-start', async (req, res, next) => {
   }
 
   console.log(`게임시작! ${users[0]} VS ${users[1]}`);
+  console.log('1분 지나면 로비 이동...');
 
   // 게임 시간 1분
   setTimeout(async () => {
-    console.log('1분 지나면 로비 이동...');
-
     try {
       const lobbyServerAddress = 'http://localhost:3333/api';
 
@@ -97,17 +97,19 @@ router.post('/game-start', async (req, res, next) => {
       });
 
       if (!response.ok) {
-        throw new Error(`로비 복귀 실패: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`로비 복귀 실패: ${response.statusText} - ${errorText}`);
       }
 
-      console.log('두 유저 로비 복귀!');
+      const data = JSON.parse(responseText); // 직접 파싱
+      console.log('Response JSON:', data);
     } catch (err) {
       console.error('로비 복귀 실패:', err.message);
     }
-  }, 60000); // 1분 - 60,000 ms
+  }, 5000); // 1분 - 60,000 ms
 
   // 매칭 성공 응답
-  res.json({ message: '게임 종료!', users });
+  res.json({ message: '게임 시작!', users });
 });
 
 // 게임 종료 API - 필요 시 호출

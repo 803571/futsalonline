@@ -33,7 +33,7 @@ router.get('/players', async (req, res, next) => {
       },
     });
 
-    // 플레이어 이름, 가장 높은 스탯
+    // 플레이어 이름, 가장 높은 스탯 3개
     const playersWithMaxStats = players.map((player) => ({
       name: player.name,
       height: player.height,

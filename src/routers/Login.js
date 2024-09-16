@@ -24,11 +24,11 @@ router.post("/sign", async (req, res, next) => {
     return res.status(400).json({ err });
   }
 
-  const isAccount = await prisma.Accounts.findFirst({
+  const Account = await prisma.Accounts.findFirst({
     where: { userId: userId },
   });
 
-  if(isAccount) {
+  if(Account) {
      return res.status(400).json({errorMessage: '중복된 이름입니다.'});
   }
 

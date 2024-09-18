@@ -44,7 +44,7 @@ router.post('/soccer' , authSigninMiddleware, async(req,res,next) => {
     })
 
     if( !myTeam || !vsTeam) {
-        return res.status(400).json({errorMessage: ``})
+        return res.status(400).json({errorMessage: `구성된 팀이 없어요.`});
     }
 
 
@@ -57,13 +57,17 @@ router.post('/soccer' , authSigninMiddleware, async(req,res,next) => {
             where: {playerId: playerId}
         })
 
+        const playerLv = await prisma.rosters.findFirst({
+            where: {playerId: playerId}
+        })
+
         // 밑에 0.3 , 0.5는 예시
+        // 플레이어 레벨당 1개의 스텟이 1씩 오른다.
         myTeamPower += (player.speed * 0.3 + player.acceleration * 0.3 
             + player.shootingFinish * 0.5 + player.shootingPower * 0.3 
-            + player.pass * 0.3);      
+            + player.pass * 0.3 + playerLv * 5);      
     }
-
-    
+  
     // 상대 팀 전투력 측정
     let vsTeamPower = 0;
     for(let key in vsTeam) {
@@ -73,15 +77,24 @@ router.post('/soccer' , authSigninMiddleware, async(req,res,next) => {
             where: {playerId: playerId}
         })
 
+        const playerLv = await prisma.rosters.findFirst({
+            where: {playerId: playerId}
+        })
         // 밑에 0.3 , 0.5는 예시
         vsTeamPower += (player.speed * 0.3 + player.acceleration * 0.3 
             + player.shootingFinish * 0.5 + player.shootingPower * 0.3 
-            + player.pass * 0.3);  
+            + player.pass * 0.3 + playerLv * 5);  
     }
 
     let comparePower = (myTeamPower + vsTeamPower) * Math.random();
     if(comparePower < myTeamPower) {
         // 나의 팀이 승리
+        await prisma.gameRankings.update({
+            data: {
+                playRecords: [vsTeam.accountId,"win",]
+
+            }
+        })
     }
     else if(comparePower === myTeamPower) {
        // 동점

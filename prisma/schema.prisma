@@ -36,6 +36,7 @@ model Accounts {
 }
 
 // 선수 카드
+// 강화 방법? => 
 model Players {
   playerId        Int      @id @default(autoincrement()) @map("playerId")
   name            String   @unique @map("name") // 선수 이름 : 유일
@@ -69,6 +70,7 @@ model Rosters {
   rosterId      Int      @id @default(autoincrement()) @map("rosterId")
   accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
   playerId      Int      @map("playerId") // Players 테이블 참조 FK
+  playerLv      Int      @default(1) @map("playerLv") // 선수의 레벨
   amount        Int      @default(1) @map("amount") // 카드 개수
 
   // Accounts 테이블과 관계 설정

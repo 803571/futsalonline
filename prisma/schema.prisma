@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Accounts {
+  accountId Int    @id @default(autoincrement()) @map("accountId")
+  id        String @unique @map("id")
+  password  String @map("password")
+  name      String @map("name")
+  age       Int    @map("age")
+  cash      Int    @default(10000) @map("cash")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt() @map("updatedAt")
+
+  clubs Clubs?
+
+  @@map("Accounts")
+}
+
+model Clubs {
+  clubId      Int    @id @default(autoincrement()) @map("clubId")
+  accountId   Int    @unique @map("accountId")
+  nickname    String @unique @map("nickname")
+  starters    Json   @map("starters")
+  substitutes Json   @map("substitutes")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt() @map("updatedAt")
+
+  account     Accounts      @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  ActualCards ActualCards[]
+
+  @@map("Clubs")
+}
+
+model Cards {
+  cardId      Int    @id @default(autoincrement()) @map("cardId")
+  name        String @map("name")
+  height      Int    @map("height")
+  weight      Int    @map("weight")
+  nationality String @map("nationality")
+  position    String @map("position")
+
+  PAC Int @map("PAC")
+  SHO Int @map("SHO")
+  PAS Int @map("PAS")
+  DRI Int @map("DRI")
+  DEF Int @map("DEF")
+  PHY Int @map("PHY")
+  OVR Int @map("OVR")
+
+  createdAt   DateTime      @default(now()) @map("createdAt")
+  updatedAt   DateTime      @updatedAt() @map("updatedAt")
+  ActualCards ActualCards[]
+
+  @@map("Cards")
+}
+
+model ActualCards {
+  actualcardId Int @id @default(autoincrement()) @map("actualcardId")
+  cardId       Int @map("cardId")
+  clubId       Int @map("clubId")
+  enhance      Int @map("enhance")
+
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt() @map("updatedAt")
+
+  card Cards @relation(fields: [cardId], references: [cardId], onDelete: Cascade)
+  club Clubs @relation(fields: [clubId], references: [clubId], onDelete: Cascade)
+
+  @@map("ActualCards")
+}

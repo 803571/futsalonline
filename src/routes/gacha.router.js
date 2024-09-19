@@ -4,9 +4,9 @@ import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-// FW Pack
-router.post('/gacha/fwPack', authMiddleware, async (req, res, next) => {
+router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
   const { accountId } = req.user;
+  const { packId } = req.params;
 
   const account = await prisma.accounts.findFirst({ where: { accountId } });
 
@@ -24,9 +24,9 @@ router.post('/gacha/fwPack', authMiddleware, async (req, res, next) => {
     },
   });
 
-  // FW 솎아내기
-  const forward = await prisma.cards.findMany({
-    where: { position: 'FW' },
+  // 포지션 구분해서 담기
+  const cards = await prisma.cards.findMany({
+    where: { position: packId },
     select: {
       cardId: true,
       OVR: true,
@@ -36,43 +36,58 @@ router.post('/gacha/fwPack', authMiddleware, async (req, res, next) => {
 
   const randomNumber = Math.floor(Math.random() * 10);
 
-  const forwardOVR = [];
+  const cardsOVR = [];
 
-  // OVR 91
+  // 확률에 따른 랜덤한 범위
+  // OVR 91 // 10%
   if (randomNumber === 9) {
-    forward.map((item) => {
+    cards.map((item) => {
       if (item.OVR >= 91) {
-        forwardOVR.push(item.cardId);
+        cardsOVR.push(item.cardId);
       }
     });
   }
-  // OVR 89, 90
+  // OVR 89, 90 // 20%
   if (randomNumber === 7 || randomNumber === 8) {
-    forward.map((item) => {
+    cards.map((item) => {
       if (item.OVR === 89 || item.OVR === 90) {
-        forwardOVR.push(item.cardId);
+        cardsOVR.push(item.cardId);
       }
     });
   }
-  // OVR 87, 88
+  // OVR 87, 88 // 30%
   if (randomNumber >= 4 && randomNumber <= 6) {
-    forward.map((item) => {
+    cards.map((item) => {
       if (item.OVR === 87 || item.OVR === 88) {
-        forwardOVR.push(item.cardId);
+        cardsOVR.push(item.cardId);
       }
     });
   }
-  // OVR <= 86
+  // OVR <= 86 // 40%
   if (randomNumber <= 3) {
-    forward.map((item) => {
+    cards.map((item) => {
       if (item.OVR <= 86) {
-        forwardOVR.push(item.cardId);
+        cardsOVR.push(item.cardId);
       }
     });
   }
+
+  // OVR 범위 내에서 랜덤한 선수
+  const randomNumber2 = Math.floor(Math.random() * cardsOVR.length);
+
+  const prize = await prisma.cards.findFirst({
+    where: { cardId: cardsOVR[randomNumber2] },
+    select: {
+      cardId: true,
+      OVR: true,
+      name: true,
+    },
+  });
 
   if (randomNumber)
-    return res.status(200).json({ data: forwardOVR, rr: randomNumber });
+    return res
+      .status(200)
+      .json({ data: cardsOVR, randomNumber, packId, prize: prize });
 });
 
 export default router;

@@ -34,39 +34,57 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
     },
   });
 
-  const randomNumber = Math.floor(Math.random() * 10);
+  // 포지션 내 최대 OVR
+  let minOVR = cards[0].OVR;
+  for (let i = 0; i < cards.length; i++) {
+    if (minOVR > cards[i].OVR) {
+      minOVR = cards[i].OVR;
+    }
+  }
+
+  // 포지션 내 최소 OVR
+  let maxOVR = 0;
+  for (let i = 0; i < cards.length; i++) {
+    if (maxOVR < cards[i].OVR) {
+      maxOVR = cards[i].OVR;
+    }
+  }
+
+  const difference = maxOVR - minOVR;
+
+  const randomNumber = Math.floor(Math.random() * 100) + 1;
 
   const cardsOVR = [];
 
   // 확률에 따른 랜덤한 범위
-  // OVR 91 // 10%
-  if (randomNumber === 9) {
+  // 포지션 하위 100% OVR
+  if (randomNumber > 75) {
     cards.map((item) => {
-      if (item.OVR >= 91) {
+      if (item.OVR >= minOVR) {
         cardsOVR.push(item.cardId);
       }
     });
   }
-  // OVR 89, 90 // 20%
-  if (randomNumber === 7 || randomNumber === 8) {
+  // 포지션 하위 75% OVR
+  if (randomNumber > 50 && randomNumber <= 75) {
     cards.map((item) => {
-      if (item.OVR === 89 || item.OVR === 90) {
+      if (item.OVR >= minOVR && item.OVR <= minOVR + difference * (3 / 4)) {
         cardsOVR.push(item.cardId);
       }
     });
   }
-  // OVR 87, 88 // 30%
-  if (randomNumber >= 4 && randomNumber <= 6) {
+  // 포지션 하위 50% OVR
+  if (randomNumber > 25 && randomNumber <= 50) {
     cards.map((item) => {
-      if (item.OVR === 87 || item.OVR === 88) {
+      if (item.OVR >= minOVR && item.OVR <= minOVR + difference * (2 / 4)) {
         cardsOVR.push(item.cardId);
       }
     });
   }
-  // OVR <= 86 // 40%
-  if (randomNumber <= 3) {
+  // 포지션 하위 25% OVR
+  if (randomNumber <= 25) {
     cards.map((item) => {
-      if (item.OVR <= 86) {
+      if (item.OVR >= minOVR && item.OVR <= minOVR + difference * (1 / 4)) {
         cardsOVR.push(item.cardId);
       }
     });
@@ -85,9 +103,12 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
   });
 
   if (randomNumber)
-    return res
-      .status(200)
-      .json({ data: cardsOVR, randomNumber, packId, prize: prize });
+    return res.status(200).json({
+      cardsOVR,
+      randomNumber,
+      prize,
+      balance: spentAccount.cash,
+    });
 });
 
 export default router;

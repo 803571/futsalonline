@@ -102,13 +102,12 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
     },
   });
 
-  if (randomNumber)
-    return res.status(200).json({
-      cardsOVR,
-      randomNumber,
-      prize,
-      balance: spentAccount.cash,
-    });
+  return res.status(200).json({
+    cardsOVR,
+    randomNumber,
+    prize,
+    balance: spentAccount.cash,
+  });
 });
 
 export default router;

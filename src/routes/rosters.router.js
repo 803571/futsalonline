@@ -102,7 +102,7 @@ router.get('/rosters/:accountId', async (req, res, next) => {
       return res.status(404).json({ errorMessage: '해당 계정을 찾을 수 없습니다.' });
     }
 
-    // 인벤토리 아이템 목록 조회
+    // 로스터 선수 목록 조회
     const rosters = await prisma.rosters.findMany({
       where: { accountId: +accountId },
       include: {

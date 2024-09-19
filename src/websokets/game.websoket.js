@@ -46,6 +46,25 @@ function startGame() {
 
     currentAttacker = newAttacker;
   }, 3000);
+
+  setTimeout(() => {
+    clearInterval(attackerInterval);
+    endGame();
+  }, 60 * 1000);
+}
+
+function endGame() {
+  players.forEach((player) => {
+    player.send(`게임이 종료되었습니다. 로비로 돌아갑니다.`);
+  });
+
+  setTimeout(() => {
+    players.forEach((player) => {
+      player.close();
+    });
+
+    players = [];
+  }, 1000); // 1초 대기 후 연결 종료
 }
 
 export { setUpGameWebSoket };

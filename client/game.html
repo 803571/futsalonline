@@ -30,6 +30,12 @@
       ws.onmessage = (event) => {
         console.log('Game server message:', event.data);
         addLog('Game server message: ' + event.data);
+
+        if (event.data.includes('게임이 종료되었습니다')) {
+          setTimeout(() => {
+            window.location.href = 'http://localhost:3333/lobby.html';
+          }, 1000);
+        }
       };
       
       ws.onerror = (error) => {

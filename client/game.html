@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game</title>
+  <style>
+    #status {
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Game Screen</h1>
+  <div id="status">경기를 시작합니다...</div>
+
+  <script>
+    const statusDiv = document.getElementById('status');
+    const params = new URLSearchParams(window.location.search);
+    const port = params.get('port');
+    
+    if (port) {
+      const ws = new WebSocket(`ws://localhost:${port}`);
+      
+      ws.onopen = () => {
+        console.log('Connected to the game server on port', port);
+      };
+      
+      ws.onmessage = (event) => {
+        console.log('Game server message:', event.data);
+        addLog('Game server message: ' + event.data);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error on game server:', error);
+      };
+      
+      ws.onclose = () => {
+        addLog('Game server connection closed');
+      };
+    } else {
+      addLog('Error: No port specified.');
+      console.error('Error: Port is not specified in the URL.');
+    }
+
+    function addLog(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      statusDiv.textContent += `\n[${timestamp}] ${message}`;
+      statusDiv.scrollTop = statusDiv.scrollHeight;
+    }
+  </script>
+</body>
+</html>

@@ -82,7 +82,7 @@ router.post('/game-start', async (req, res, next) => {
   }
 
   console.log(`게임시작! ${users[0]} VS ${users[1]}`);
-  console.log('1분 지나면 로비 이동...');
+  console.log('게임 시작 후 1분이 지나면 로비 이동...');
 
   // 게임 시간 1분
   setTimeout(async () => {
@@ -96,13 +96,12 @@ router.post('/game-start', async (req, res, next) => {
         body: JSON.stringify({ users }), // 플레이어 정보 전송
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`로비 복귀 실패: ${response.statusText} - ${errorText}`);
-      }
+      console.log('Response Status:', response.status);
+      console.log('Response OK:', response.ok);
 
-      const data = JSON.parse(responseText); // 직접 파싱
-      console.log('Response JSON:', data);
+      // JSON 응답 받기
+      const responseData = await response.json();
+      console.log('Response Data:', responseData);
     } catch (err) {
       console.error('로비 복귀 실패:', err.message);
     }

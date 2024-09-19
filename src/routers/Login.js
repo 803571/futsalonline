@@ -33,8 +33,6 @@ router.post("/sign", async (req, res, next) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 15);
-  console.log("뭘봐");
-  console.log(hashedPassword);
 
   const newAccount = await prisma.Accounts.create({
     data:{

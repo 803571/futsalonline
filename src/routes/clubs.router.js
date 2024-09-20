@@ -34,13 +34,7 @@ router.post('/clubs', authMiddleware, async (req, res, next) => {
       data: {
         accountId: +accountId,
         nickname: nickname,
-        starters: {
-          FW: '',
-          MF: '',
-          DF: '',
-          GK: '',
-        },
-        substitutes: {},
+        starters: {},
       },
     });
 
@@ -56,8 +50,8 @@ router.get('/clubs', async (req, res, next) => {
     select: {
       clubId: true,
       accountId: true,
+      nickname: true,
       starters: true,
-      substitutes: true,
     },
   });
 
@@ -75,8 +69,8 @@ router.get('/clubs/:clubId', async (req, res, next) => {
     select: {
       clubId: true,
       accountId: true,
+      nickname: true,
       starters: true,
-      substitutes: true,
     },
   });
 

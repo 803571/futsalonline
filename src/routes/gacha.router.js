@@ -29,83 +29,182 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
     where: { position: packId },
     select: {
       cardId: true,
-      OVR: true,
       name: true,
+      PAC: true,
+      SHO: true,
+      PAS: true,
+      DRI: true,
+      DEF: true,
+      PHY: true,
     },
   });
 
-  // 포지션 내 최대 OVR
-  let minOVR = cards[0].OVR;
-  for (let i = 0; i < cards.length; i++) {
-    if (minOVR > cards[i].OVR) {
-      minOVR = cards[i].OVR;
-    }
+  let stat = [];
+  if (packId === 'FW') {
+    stat = cards.map((item) => item.PAC + item.SHO);
   }
 
-  // 포지션 내 최소 OVR
-  let maxOVR = 0;
-  for (let i = 0; i < cards.length; i++) {
-    if (maxOVR < cards[i].OVR) {
-      maxOVR = cards[i].OVR;
-    }
+  if (packId === 'MF') {
+    stat = cards.map((item) => item.PAS + item.DRI);
   }
 
-  const difference = maxOVR - minOVR;
+  if (packId === 'DF') {
+    stat = cards.map((item) => item.DEF + item.PHY);
+  }
+  const min = Math.min(...stat);
+  const max = Math.max(...stat);
+  const difference = max - min;
 
   const randomNumber = Math.floor(Math.random() * 100) + 1;
-
   const cardsOVR = [];
 
-  // 확률에 따른 랜덤한 범위
-  // 포지션 하위 100% OVR
-  if (randomNumber > 75) {
-    cards.map((item) => {
-      if (item.OVR >= minOVR) {
-        cardsOVR.push(item.cardId);
-      }
-    });
-  }
-  // 포지션 하위 75% OVR
-  if (randomNumber > 50 && randomNumber <= 75) {
-    cards.map((item) => {
-      if (item.OVR >= minOVR && item.OVR <= minOVR + difference * (3 / 4)) {
-        cardsOVR.push(item.cardId);
-      }
-    });
-  }
-  // 포지션 하위 50% OVR
-  if (randomNumber > 25 && randomNumber <= 50) {
-    cards.map((item) => {
-      if (item.OVR >= minOVR && item.OVR <= minOVR + difference * (2 / 4)) {
-        cardsOVR.push(item.cardId);
-      }
-    });
-  }
-  // 포지션 하위 25% OVR
-  if (randomNumber <= 25) {
-    cards.map((item) => {
-      if (item.OVR >= minOVR && item.OVR <= minOVR + difference * (1 / 4)) {
-        cardsOVR.push(item.cardId);
-      }
-    });
+  if (packId === 'FW') {
+    if (randomNumber > 75) {
+      cards.forEach((item) => {
+        if (item.PAC + item.SHO >= min) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 75%
+    if (randomNumber > 50 && randomNumber <= 75) {
+      cards.forEach((item) => {
+        if (
+          item.PAC + item.SHO >= min &&
+          item.PAC + item.SHO <= min + difference * (3 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 50%
+    if (randomNumber > 25 && randomNumber <= 50) {
+      cards.forEach((item) => {
+        if (
+          item.PAC + item.SHO >= min &&
+          item.PAC + item.SHO <= min + difference * (2 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 25%
+    if (randomNumber <= 25) {
+      cards.forEach((item) => {
+        if (
+          item.PAC + item.SHO >= min &&
+          item.PAC + item.SHO <= min + difference * (1 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
   }
 
-  // OVR 범위 내에서 랜덤한 선수
+  if (packId === 'MF') {
+    if (randomNumber > 75) {
+      cards.forEach((item) => {
+        if (item.PAS + item.DRI >= min) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 75%
+    if (randomNumber > 50 && randomNumber <= 75) {
+      cards.forEach((item) => {
+        if (
+          item.PAS + item.DRI >= min &&
+          item.PAS + item.DRI <= min + difference * (3 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 50%
+    if (randomNumber > 25 && randomNumber <= 50) {
+      cards.forEach((item) => {
+        if (
+          item.PAS + item.DRI >= min &&
+          item.PAS + item.DRI <= min + difference * (2 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 25%
+    if (randomNumber <= 25) {
+      cards.forEach((item) => {
+        if (
+          item.PAS + item.DRI >= min &&
+          item.PAS + item.DRI <= min + difference * (1 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+  }
+
+  if (packId === 'DF') {
+    if (randomNumber > 75) {
+      cards.forEach((item) => {
+        if (item.DEF + item.PHY >= min) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 75%
+    if (randomNumber > 50 && randomNumber <= 75) {
+      cards.forEach((item) => {
+        if (
+          item.DEF + item.PHY >= min &&
+          item.DEF + item.PHY <= min + difference * (3 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 50%
+    if (randomNumber > 25 && randomNumber <= 50) {
+      cards.forEach((item) => {
+        if (
+          item.DEF + item.PHY >= min &&
+          item.DEF + item.PHY <= min + difference * (2 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+    // // 포지션 하위 25%
+    if (randomNumber <= 25) {
+      cards.forEach((item) => {
+        if (
+          item.DEF + item.PHY >= min &&
+          item.DEF + item.PHY <= min + difference * (1 / 4)
+        ) {
+          cardsOVR.push(item.cardId);
+        }
+      });
+    }
+  }
+
   const randomNumber2 = Math.floor(Math.random() * cardsOVR.length);
 
   const prize = await prisma.cards.findFirst({
     where: { cardId: cardsOVR[randomNumber2] },
     select: {
       cardId: true,
-      OVR: true,
       name: true,
+      PAC: true,
+      SHO: true,
+      PAS: true,
+      DRI: true,
+      DEF: true,
+      PHY: true,
     },
   });
 
   return res.status(200).json({
-    cardsOVR,
-    randomNumber,
-    prize,
+    card: prize,
     balance: spentAccount.cash,
   });
 });

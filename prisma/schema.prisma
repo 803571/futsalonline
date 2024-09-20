@@ -34,7 +34,6 @@ model Clubs {
   accountId   Int    @unique @map("accountId")
   nickname    String @unique @map("nickname")
   starters    Json   @map("starters")
-  substitutes Json   @map("substitutes")
 
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt() @map("updatedAt")
@@ -59,7 +58,6 @@ model Cards {
   DRI Int @map("DRI")
   DEF Int @map("DEF")
   PHY Int @map("PHY")
-  OVR Int @map("OVR")
 
   createdAt   DateTime      @default(now()) @map("createdAt")
   updatedAt   DateTime      @updatedAt() @map("updatedAt")

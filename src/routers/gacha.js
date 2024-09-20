@@ -30,7 +30,15 @@ router.post(
         .json({ errorMessage: `번호에 해당하는 선수가 존재하지 않습니다.` });
     }
 
+    const roster = await prisma.rosters.findFirst({
+        where: {
+            playerId: wantedPlayer.playerId,
+            accountId: accountId,
+        }
+      })
+
     await prisma.$transaction(async (tx) => {
+      
       await tx.cashDatasets.create({
         data: {
           accountId: accountId,
@@ -40,12 +48,26 @@ router.post(
         },
       });
 
-      await tx.rosters.create({
-        data: {
-          accountId: accountId,
-          playerId: wantedPlayer.playerId,
-        },
-      });
+      if(roster) {
+        await tx.rosters.update({
+            data: {
+                amount: roster.amount + 1,
+            },
+            where: {
+                playerId: wantedPlayer.playerId,
+                accountId: accountId,
+                rosterId: roster.rosterId,
+            }
+        })
+      }
+      else {
+        await tx.rosters.create({
+            data: {
+              accountId: accountId,
+              playerId: wantedPlayer.playerId,
+            },
+          });
+      }  
     });
 
     return res.status(200).json({ message: `카드 영입에 성공했습니다.` });

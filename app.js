@@ -5,6 +5,7 @@ import soccer from "./src/routers/soccer.js";
 import lvUp from "./src/routers/playerLvUp.js";
 import rank from "./src/routers/rank.js";
 import gacha from "./src/routers/gacha.js";
+import teams from "./src/routers/teams.js";
 import dotenv from "dotenv";
 import LogMiddleware from "./src/middlewares/log.middleware.js";
 import ErrorHandlingMiddleware from "./src/middlewares/error-handling.middleware.js";
@@ -17,7 +18,7 @@ const PORT = 3333;
 app.use(LogMiddleware);
 app.use(express.json());
 
-app.use("/api", [login, cash, soccer, lvUp, rank, gacha]);
+app.use("/api", [login, cash, soccer, lvUp, rank, gacha, teams]);
 app.use(ErrorHandlingMiddleware);
 
 app.listen(PORT, () => {

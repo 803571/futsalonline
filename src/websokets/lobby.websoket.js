@@ -1,15 +1,13 @@
 import { WebSocketServer } from 'ws';
-
-const gamePorts = [4444, 4445, 4446];
-const portStatus = { 4444: 0, 4445: 0, 4446: 0 };
-
-const waitingList = [];
+import portUtil from '../utils/portUtils.js'
 
 export function setUpLobbyWebSoket(server) {
   const wss = new WebSocketServer({ server });
 
+  const waitingList = [];
+
   wss.on('connection', (ws) => {
-    console.log('새로운 클라이언트가 연결되었습니다!');
+    console.log('새로운 유저가 로비 서버에 접속했습니다!');
 
     ws.on('message', (message) => {
       const messageStr = message.toString();
@@ -27,13 +25,13 @@ export function setUpLobbyWebSoket(server) {
           const player1 = waitingList.shift();
           const player2 = waitingList.shift();
 
-          const availablePort = findAvailablePort();
+          const availablePort = portUtil.findAvailablePort();
           
           // 유저 대기열 업데이트
           updateWaitingList();
 
           if (availablePort !== null) {
-            portStatus[availablePort] = 2;
+            portUtil.setPortStatus(availablePort, 2);
 
             player1.send(`redirect:${availablePort}`);
             player2.send(`redirect:${availablePort}`);
@@ -46,7 +44,7 @@ export function setUpLobbyWebSoket(server) {
     });
 
     ws.on('close', () => {
-      console.log('클라이언트가 이탈했습니다.');
+      console.log('유저가 로비 서버에서 이탈했습니다.');
       const index = waitingList.indexOf(ws);
       if (index !== -1) {
         waitingList.splice(index, 1);
@@ -60,16 +58,6 @@ export function setUpLobbyWebSoket(server) {
         client.send(`대기열: ${waitingPlayers}...`);
         client.send(`다른 유저를 기다리는 중...`);
       });
-    }
-
-    function findAvailablePort() {
-      for (const port of gamePorts) {
-        if (portStatus[port] < 2) {
-          return port;
-        }
-      }
-
-      return null;
     }
   });
 }

@@ -1,7 +1,7 @@
 import express from "express";
 import { prisma } from "../utils/prisma/index.js";
 import joi from "joi";
-import bcrypt from "bcrypt";
+import bcrypt, { hash } from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -34,11 +34,17 @@ router.post("/sign", async (req, res, next) => {
 
   const hashedPassword = await bcrypt.hash(password, 15);
 
-  const newAccount = await prisma.Accounts.create({
+  const newAccount = await prisma.accounts.create({
     data:{
       userId: userId,
         password: hashedPassword,
     },
+  })
+
+  const newRanking = await prisma.gameRankings.create({
+    data: {
+      accountId: newAccount.accountId,
+    }   
   })
 
   return res.status(201).json({message:`피파 온라인에 오신걸 환영합니다. ${newAccount.userId}님`});

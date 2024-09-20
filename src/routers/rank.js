@@ -7,12 +7,6 @@ const router = express.Router();
 // 전체 랭크 조회 (상위 랭크 조회도 가능)
 router.get('/rank', async(req,res,next) => {
     const rank = await prisma.gameRankings.findMany({
-        // where: {
-        //     rankScore: {
-        //         gt:1000,
-        //     }
-           
-        // },
         orderBy: {rankScore: 'desc'},
     })
 
@@ -24,21 +18,20 @@ router.get('/rank', async(req,res,next) => {
     let saveRankings = [];
 
     for(let key in rank) {
-        const ranking = key;
+        const ranking = +key;
         const rankInfo = rank[key];
-
-        saveRankings.push(ranking + rankInfo);
+        saveRankings.push([ranking + 1,rankInfo]);
     }
 
     return res.status(400).json({data: saveRankings});
 })
 
 router.get('/userRank',authSigninMiddleware, async(req,res,next) => {
-    const {userId} = req.account;
+    const {accountId} = req.account;
 
     const myRank = await prisma.gameRankings.findFirst({
         where: {
-            userId: userId,
+            accountId: +accountId,
         }
     })
 
@@ -46,7 +39,8 @@ router.get('/userRank',authSigninMiddleware, async(req,res,next) => {
         orderBy: {rankScore: 'desc'},
     })
 
-    const saveKey = 0;
+    //console.log(rank);
+    let ranking = 0;
     for(let key in rank) {
         const {accountId} = rank[key];
 
@@ -54,11 +48,14 @@ router.get('/userRank',authSigninMiddleware, async(req,res,next) => {
             continue;
         }
         else {
-           saveKey = key;
+            ranking = key;
         }
-    }
 
-    return res.status(400).json({data: saveKey + myRank});
+    }
+    //console.log(rank.indexOf(myRank.accountId));
+
+    console.log(ranking);
+    return res.status(200).json({data: [+ranking + 1, myRank]});
     
 })
 export default router;

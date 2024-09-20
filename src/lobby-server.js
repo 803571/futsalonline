@@ -3,7 +3,7 @@ import http from 'http';
 import cors from 'cors'
 import { getClientPath } from './utils/pathUtils.js';
 import { setUpLobbyWebSoket } from './websokets/lobby.websoket.js';
-import UsersRouter from './routes/users.router.js';
+import AccountsRouter from './routes/accounts.router.js';
 import CashRouter from './routes/cash.router.js';
 import PlayersRouter from './routes/players.router.js';
 import RostersRouter from './routes/rosters.router.js';
@@ -25,7 +25,7 @@ app.use(cors());
 app.use(LogMiddleware);
 app.use(express.json());
 
-app.use('/api', [UsersRouter, CashRouter, PlayersRouter, RostersRouter, MatchRouter]);
+app.use('/api', [AccountsRouter, CashRouter, PlayersRouter, RostersRouter, MatchRouter]);
 app.use(ErrorHandlingMiddleware);
 
 server.listen(PORT, () => {

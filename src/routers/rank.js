@@ -7,6 +7,12 @@ const router = express.Router();
 // 전체 랭크 조회 (상위 랭크 조회도 가능)
 router.get('/rank', async(req,res,next) => {
     const rank = await prisma.gameRankings.findMany({
+        select: {
+           accountId: true,
+           winningRate: true,
+           rankScore: true,
+           playRecords: true,
+        },
         orderBy: {rankScore: 'desc'},
     })
 
@@ -23,12 +29,20 @@ router.get('/rank', async(req,res,next) => {
         saveRankings.push([ranking + 1,rankInfo]);
     }
 
-    return res.status(400).json({data: saveRankings});
+    return res.status(200).json({data: saveRankings});
 })
 
 router.get('/userRank',authSigninMiddleware, async(req,res,next) => {
     const {accountId} = req.account;
 
+    const Accounts = await prisma.accounts.findFirst({
+        where: {
+            accountId: accountId,
+        },
+        select: {
+            userId: true,
+        }
+    })
     const myRank = await prisma.gameRankings.findFirst({
         where: {
             accountId: +accountId,
@@ -36,11 +50,19 @@ router.get('/userRank',authSigninMiddleware, async(req,res,next) => {
     })
 
     const rank = await prisma.gameRankings.findMany({
+        select: {
+           accountId: true,
+           winningRate: true,
+           rankScore: true,
+           playRecords: true,
+        },
         orderBy: {rankScore: 'desc'},
     })
 
     //console.log(rank);
     let ranking = 0;
+    let saveRankings = [];
+
     for(let key in rank) {
         const {accountId} = rank[key];
 
@@ -48,14 +70,15 @@ router.get('/userRank',authSigninMiddleware, async(req,res,next) => {
             continue;
         }
         else {
-            ranking = key;
+            ranking = +key;
+            saveRankings.push([ranking + 1,Accounts.userId, rank[key]]);
+            break;
         }
 
     }
-    //console.log(rank.indexOf(myRank.accountId));
-
-    console.log(ranking);
-    return res.status(200).json({data: [+ranking + 1, myRank]});
+    
+    console.log(saveRankings[0][1]);
+    return res.status(200).json({data: saveRankings});
     
 })
 export default router;

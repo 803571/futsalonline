@@ -68,7 +68,7 @@ router.post('/entry/:playerId' ,authSigninMiddleware, async(req,res,next) => {
      })
    })
 
-   return res.status(200).json({message: `${player.playerId}가 팀에 추가되었습니다.`});
+   return res.status(200).json({message: `${player.name}이 팀에 추가되었습니다.`});
 })
 
 export default router;

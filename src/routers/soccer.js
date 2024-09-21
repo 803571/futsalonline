@@ -10,27 +10,70 @@ router.post("/soccer", authSigninMiddleware, async (req, res, next) => {
   // 내 계정 이외의 계정과 매칭
   // 현재 로그인한 계정을 제외한 모든 계정 조회
 
-  // Case 축구 매칭에 실패했을 경우,
-  // 1.간단하게 할 것인가.
-  // 2.축구 매칭에 들어가게되면 계속 반복할 것인가?
 
-  const accountList = await prisma.accounts.findMany({
+  // 매칭 테이블에 실어버리기
+  const isMatched = await prisma.matching.findFirst({
     where: {
-      NOT: {
-        accountId: accountId,
-      },
-    },
-  });
+      accountId: accountId,
+    }
+  })
 
-  if (!accountList) {
-    return res
-      .status(400)
-      .json({ errorMessage: `현재 매칭중인 축구팀이 없습니다.` });
+  if(isMatched) {
+    return res.status(400).json({message: `이미 매칭을 돌리고 있습니다.`});
   }
 
-  const start = accountList[0].accountId;
-  const end = accountList[accountList.length - 1].accountId;
-  const Matching = Math.floor(Math.random() * (end - start + 1)) + start;
+
+  const myMatching = await prisma.matching.create({
+    data: {
+      accountId: accountId,
+    }
+  })
+
+
+  try{
+     setTimeout(() => {
+        setInterval(async () => {
+             const matchingList = await prisma.matching.findMany({
+                  NOT: {
+                    accountId: myMatching.accountId,
+                  }
+             })
+            
+             if(!matchingList) {
+                console.log('현재 탐색 중입니다.');
+             }
+             
+             const myRanking = await prisma.gameRankings.findFirst({
+              where: {
+                accountId: myMatching.accountId,
+              }
+             })
+             // 매칭 상대 하나 정하기
+             const randomMatching = Math.floor(Math.random() * matchingList.length);
+
+             const vsRanking = await prisma.gameRankings.findFirst({
+               where: {
+                accountId: matchingList[randomMatching].accountId,
+                rankScore: {
+                  gt: myRanking.rankScore - 500,
+                  lt: myRanking.rankScore + 500,
+                }
+               }
+               
+             })
+
+             if(!vsRanking) {
+
+             }
+             
+         },1000)
+     },60000)
+
+
+  }
+  catch(err) {
+
+  }
 
   // 매칭 상대의 팀 정보와 내 팀 정보를 불러와서 비교하기
   const myTeam = await prisma.teams.findMany({

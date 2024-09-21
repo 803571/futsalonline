@@ -12,7 +12,7 @@ router.put("/LvUp/:playerId", authSigninMiddleware, async (req, res, next) => {
   const roster = await prisma.rosters.findFirst({
     where: {
       accountId: accountId,
-      playerId: playerId,
+      playerId: +playerId,
     },
   });
 
@@ -33,11 +33,20 @@ router.put("/LvUp/:playerId", authSigninMiddleware, async (req, res, next) => {
     // 카드를 2장 소모하고 레벨을 하나 올림
     data: {
       playerLv: roster.playerLv + 1,
-      amount: amount - 2,
+      amount: roster.amount - 2,
     },
+    where: {
+      rosterId: roster.rosterId
+    }
   });
 
-  return res.status(200).json({ message: `성공적으로 강화를 완료했습니다.` });
+  const player = await prisma.players.findFirst({
+    where:{
+      playerId: roster.playerId,
+    }
+  })
+
+  return res.status(200).json({ message: `${player.name}의 LV이 ${newRoster.playerLv}로 강화되었습니다.` });
 });
 
 export default router;

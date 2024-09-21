@@ -2,8 +2,9 @@ const statusDiv = document.getElementById('status');
 const params = new URLSearchParams(window.location.search);
 const port = params.get('port');
 
-// JWT 토큰을 쿼리 파라미터에서 가져와 localStorage에 다시 저장
+// 가장 늦게 로그인한 토큰을 불러오는 거 아닌가? 이 부분 수정 필요할듯
 const token = params.get('token');
+
 if (token) {
   localStorage.clear();
   localStorage.setItem('jwtToken', token);
@@ -13,7 +14,7 @@ if (token) {
 }
 
 if (port) {
-  const ws = new WebSocket(`ws://localhost:${port}`);
+  const ws = new WebSocket(`ws://localhost:${port}?token=${token}`);
 
   ws.onopen = () => {
     console.log('Connected to the game server on port', port);
@@ -24,17 +25,22 @@ if (port) {
     addLog('Game server message: ' + event.data);
 
     if (event.data.includes('게임이 종료되었습니다')) {
+      const getToken = localStorage.getItem('jwtToken');
+
       fetch('http://localhost:3333/api/game-end', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken}`, // JWT 토큰을 헤더에 추가
         },
         body: JSON.stringify({ port }),
       })
         .then((response) => response.json())
         .then((data) => {
+          console.log('API 응답:', data);
           addLog(data.message);
           setTimeout(() => {
+            console.log('Redirect URL:', data.redirectUrl);  // redirectUrl 확인
             window.location.href = data.redirectUrl;
           }, 1000);
         })

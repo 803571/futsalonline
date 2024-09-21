@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
-import cors from 'cors'
-import { getClientPath } from './utils/pathUtils.js';
+import cors from 'cors';
+import { getClientPath, getLoginPath } from './utils/pathUtils.js';
 import { setUpLobbyWebSoket } from './websokets/lobby.websoket.js';
 import AccountsRouter from './routes/accounts.router.js';
 import CashRouter from './routes/cash.router.js';
@@ -27,6 +27,10 @@ app.use(express.json());
 
 app.use('/api', [AccountsRouter, CashRouter, PlayersRouter, RostersRouter, MatchRouter]);
 app.use(ErrorHandlingMiddleware);
+
+app.get('/', (req, res) => {
+  res.sendFile(getLoginPath());
+});
 
 server.listen(PORT, () => {
   console.log(PORT, '포트로 서버가 열렸습니다!');

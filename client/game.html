@@ -15,60 +15,6 @@
   <h1>Game Screen</h1>
   <div id="status">경기를 시작합니다...</div>
 
-  <script>
-    const statusDiv = document.getElementById('status');
-    const params = new URLSearchParams(window.location.search);
-    const port = params.get('port');
-    
-    if (port) {
-      const ws = new WebSocket(`ws://localhost:${port}`);
-      
-      ws.onopen = () => {
-        console.log('Connected to the game server on port', port);
-      };
-      
-      ws.onmessage = (event) => {
-        console.log('Game server message:', event.data);
-        addLog('Game server message: ' + event.data);
-
-        if (event.data.includes('게임이 종료되었습니다')) {
-          fetch('http://localhost:3333/api/game-end', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ port })
-          })
-          .then(response => response.json())
-          .then(data => {
-            addLog(data.message);
-            setTimeout(() => {
-              window.location.href = data.redirectUrl;
-            }, 1000);
-          })
-          .catch(err => {
-            console.error('Error calling endGame API:', err);
-          });
-        }
-      };
-      
-      ws.onerror = (err) => {
-        console.error('WebSocket error on game server:', err);
-      };
-      
-      ws.onclose = () => {
-        addLog('Game server connection closed');
-      };
-    } else {
-      addLog('Error: No port specified.');
-      console.error('Error: Port is not specified in the URL.');
-    }
-
-    function addLog(message) {
-      const timestamp = new Date().toLocaleTimeString();
-      statusDiv.textContent += `\n[${timestamp}] ${message}`;
-      statusDiv.scrollTop = statusDiv.scrollHeight;
-    }
-  </script>
+  <script type="module" src="js/game.js"></script>
 </body>
 </html>

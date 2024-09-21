@@ -14,6 +14,7 @@ if (!token) {
   // 기존 WebSocket 연결이 있을 경우 종료
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.close();
+    ws = null;
   }
 
   // JWT 토큰을 쿼리 파라미터로 WebSocket에 전달
@@ -38,7 +39,7 @@ if (!token) {
     if (message.startsWith('redirect:')) {
       // URL에서 포트를 추출하여 게임 서버로 리디렉션
       const port = message.split(':')[1];
-      window.location.href = `http://localhost:${port}/game.html?port=${port}`;
+      window.location.href = `http://localhost:${port}/game.html?port=${port}&token=${token}`;
     }
   };
 

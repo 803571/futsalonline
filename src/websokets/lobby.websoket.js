@@ -84,7 +84,7 @@ export function setUpLobbyWebSoket(server) {
       });
 
       ws.on('close', () => {
-        console.log('유저가 로비 서버에서 이탈했습니다.');
+        console.log(`유저 ${userId}가 로비 서버에서 이탈했습니다.`);
         const index = waitingList.indexOf(ws);
         if (index !== -1) {
           waitingList.splice(index, 1);

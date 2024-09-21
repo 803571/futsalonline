@@ -128,3 +128,11 @@ model GameRankings {
 
   @@map("GameRankings")
 }
+
+model matching {
+  matchingId Int    @id @default(autoincrement()) @map("matchingId")
+  accountId  Int    @map("accountId")
+  createdAt  DateTime @default(now())  @map("createdAt")
+
+  @@map("matching")
+}

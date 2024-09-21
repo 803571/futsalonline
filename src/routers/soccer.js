@@ -29,18 +29,23 @@ router.post("/soccer", authSigninMiddleware, async (req, res, next) => {
     }
   })
 
+  let findCheck = false;
 
   try{
-     setTimeout(() => {
-        setInterval(async () => {
+     const timer = setTimeout(() => {
+        const game = setInterval(async () => {
              const matchingList = await prisma.matching.findMany({
                   NOT: {
                     accountId: myMatching.accountId,
+                  },
+                  rankScore: {
+                    gt: myRanking.rankScore - 500,
+                    lt: myRanking.rankScore + 500,
                   }
              })
             
              if(!matchingList) {
-                console.log('현재 탐색 중입니다.');
+                setInterval(game, 1000);
              }
              
              const myRanking = await prisma.gameRankings.findFirst({
@@ -54,21 +59,26 @@ router.post("/soccer", authSigninMiddleware, async (req, res, next) => {
              const vsRanking = await prisma.gameRankings.findFirst({
                where: {
                 accountId: matchingList[randomMatching].accountId,
-                rankScore: {
-                  gt: myRanking.rankScore - 500,
-                  lt: myRanking.rankScore + 500,
-                }
                }
-               
+
              })
 
              if(!vsRanking) {
-
+               setInterval(game,1000)
+             }
+             else {
+              clearInterval(game); 
              }
              
          },1000)
+
+         if(findCheck) {
+          clearTimeout(timer);
+         }
      },60000)
 
+     // 매칭 상대와 게임하기
+     
 
   }
   catch(err) {

@@ -38,7 +38,10 @@ router.post('/entry/:playerId' ,authSigninMiddleware, async(req,res,next) => {
 
    await prisma.$transaction(async (tx) => {
      if(roster.amount === 1) {
-        await tx.rosters.delete({
+        await tx.rosters.update({
+            data: {
+                amount: roster.amount,
+            },
             where: {
                 playerId: roster.playerId,
                 accountId: roster.accountId,

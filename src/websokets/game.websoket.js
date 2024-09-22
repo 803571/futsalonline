@@ -1,9 +1,9 @@
-import { WebSocketServer } from 'ws';
-import portUtil from '../utils/portUtils.js';
-import { prisma } from '../utils/prisma/index.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import url from 'url';
+import { WebSocketServer } from 'ws';
+import portUtil from '../utils/portUtils.js';
+import { prisma } from '../utils/prisma/index.js';
 
 dotenv.config();
 
@@ -104,12 +104,17 @@ function setUpGameWebSoket(server, port) {
     const totalStatsA = Object.values(teamAStats).reduce((acc, stat) => acc + stat, 0);
     const totalStatsB = Object.values(teamBStats).reduce((acc, stat) => acc + stat, 0);
 
-    console.log(`유저 A 총합 스탯: ${totalStatsA}`);
-    console.log(`유저 B 총합 스탯: ${totalStatsB}`);
+    console.log(`유저 ${accountAId} 총합 스탯: ${totalStatsA}`);
+    console.log(`유저 ${accountBId} 총합 스탯: ${totalStatsB}`);
 
     attackerInterval = setInterval(() => {
       const newAttacker = players[Math.floor(Math.random() * players.length)];
 
+      /*
+      // 로직 변경
+
+
+      */
       players.forEach((player) => {
         if (player === newAttacker) {
           player.send('공격 중!');
@@ -130,6 +135,7 @@ function setUpGameWebSoket(server, port) {
   async function endGame(port) {
     players.forEach((player) => {
       player.send(`게임이 종료되었습니다. 로비로 돌아갑니다.`);
+      player.send(`redirect:3333?token=${player.token}`);
     });
 
     setTimeout(() => {
@@ -138,7 +144,7 @@ function setUpGameWebSoket(server, port) {
       });
 
       players = [];
-    }, 1000); // 1초 대기 후 연결 종료
+    }, 1000); // 1초 후 종료
   }
 
   async function getClubs(accountId) {
@@ -158,7 +164,7 @@ function setUpGameWebSoket(server, port) {
     try {
       const teamPlayers = await prisma.teams.findMany({
         where: { accountId: +accountId },
-        include: { player: true }, // 각 팀의 player 정보를 포함시킴
+        include: { player: true },
       });
   
       if (teamPlayers.length === 0) {
@@ -179,9 +185,10 @@ function setUpGameWebSoket(server, port) {
         gk: 0,
       };
   
-      // 팀의 모든 선수들의 스탯을 합산
+      // 스쿼드 모든 선수들의 스탯을 합산
       teamPlayers.forEach((team) => {
-        const player = team.player; // 각 팀에 속한 선수 정보
+         // 스쿼드에 포함된 선수
+        const player = team.player;
   
         totalStats.speed += player.speed;
         totalStats.acceleration += player.acceleration;

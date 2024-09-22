@@ -1,8 +1,8 @@
+import dotenv from 'dotenv';
+import url from 'url';
 import jwt from 'jsonwebtoken';
 import { WebSocketServer } from 'ws';
 import portUtil from '../utils/portUtils.js';
-import dotenv from 'dotenv';
-import url from 'url';
 
 dotenv.config();
 

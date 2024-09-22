@@ -2,12 +2,11 @@ const statusDiv = document.getElementById('status');
 const params = new URLSearchParams(window.location.search);
 const port = params.get('port');
 
-// 가장 늦게 로그인한 토큰을 불러오는 거 아닌가? 이 부분 수정 필요할듯
 const token = params.get('token');
 
 if (token) {
-  localStorage.clear();
-  localStorage.setItem('jwtToken', token);
+  sessionStorage.clear();
+  sessionStorage.setItem('jwtToken', token);
 } else {
   console.error('JWT 토큰이 없습니다. 다시 로그인하세요.');
   window.location.href = 'http://localhost:3333/login.html';
@@ -25,7 +24,7 @@ if (port) {
     addLog('Game server message: ' + event.data);
 
     if (event.data.includes('게임이 종료되었습니다')) {
-      const getToken = localStorage.getItem('jwtToken');
+      const getToken = sessionStorage.getItem('jwtToken');
 
       fetch('http://localhost:3333/api/game-end', {
         method: 'POST',
@@ -37,11 +36,9 @@ if (port) {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log('API 응답:', data);
           addLog(data.message);
           setTimeout(() => {
-            console.log('Redirect URL:', data.redirectUrl);  // redirectUrl 확인
-            window.location.href = data.redirectUrl;
+            window.location.href = `${data.redirectUrl}?token=${getToken}`;
           }, 1000);
         })
         .catch((err) => {

@@ -7,7 +7,7 @@ loginForm.addEventListener('submit', async (event) => {
   const password = document.getElementById('password').value;
 
   try {
-    // 로그인 API 요청
+    // 로그인 API
     const response = await fetch('http://localhost:3333/api/sign-in', {
       method: 'POST',
       headers: {
@@ -19,12 +19,16 @@ loginForm.addEventListener('submit', async (event) => {
 
     const data = await response.json();
 
+    /*
+    처음에는 localStorage를 사용했지만 테스트에서 같은 브라우저를 사용하여,
+    localStorage가 공유되므로 sessionStorage로 변경
+    */
     if (response.ok && data.token) {
-      // 기존 JWT 토큰 제거(초기화)
-      localStorage.clear();
-      // JWT 토큰을 로컬 스토리지에 저장
-      localStorage.setItem('jwtToken', data.token);
-      // 로그인 성공 시 로비로 이동
+      // 세션 스토리지에서 기존 JWT 토큰 제거(초기화)
+      sessionStorage.clear();
+      // JWT 토큰, 세션 스토리지 저장
+      sessionStorage.setItem('jwtToken', data.token);
+      // 로그인 성공 시 로비 페이지로 이동
       window.location.href = 'http://localhost:3333/lobby.html';
     } else {
       alert(data.errorMessage || '로그인 실패');

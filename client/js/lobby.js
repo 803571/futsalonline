@@ -2,16 +2,16 @@ const waitingListDiv = document.getElementById('waitingList');
 const statusMessageDiv = document.getElementById('statusMessage');
 const startGameBtn = document.getElementById('startGameBtn');
 
-// WebSocket 변수를 전역에서 선언
+// WebSocket 변수
 let ws;
 
-// 로컬 스토리지에서 JWT 토큰 가져오기
-const token = localStorage.getItem('jwtToken');
+// 세션 스토리지에서 JWT 토큰 가져오기
+const token = sessionStorage.getItem('jwtToken');
 if (!token) {
   alert('로그인이 필요합니다.');
   window.location.href = 'http://localhost:3333/login.html';
 } else {
-  // 기존 WebSocket 연결이 있을 경우 종료
+  // 기존 WebSocket 연결이 있을 경우 종료 - 방어코드
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.close();
     ws = null;
@@ -37,7 +37,7 @@ if (!token) {
     }
 
     if (message.startsWith('redirect:')) {
-      // URL에서 포트를 추출하여 게임 서버로 리디렉션
+      // URL에서 포트 추출, 게임 서버로 리디렉션
       const port = message.split(':')[1];
       window.location.href = `http://localhost:${port}/game.html?port=${port}&token=${token}`;
     }

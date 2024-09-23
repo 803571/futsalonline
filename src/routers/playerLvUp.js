@@ -39,7 +39,7 @@ router.put("/LvUp/:playerId", authSigninMiddleware, async (req, res, next) => {
     const newRoster = await tx.rosters.update({
       // 카드를 2장 소모하고 레벨을 하나 올림
       data: {
-        playerLv: roster.playerLv + 1,
+        level: roster.level + 1,
         amount: roster.amount - 2,
       },
       where: {
@@ -50,9 +50,9 @@ router.put("/LvUp/:playerId", authSigninMiddleware, async (req, res, next) => {
     const cashDatasets = await tx.cashDatasets.create({
       data: {
         accountId: roster.accountId,
-        amount: (roster.playerLv + 1) * 300,
+        amount: (roster.level + 1) * 300,
         type: "enhance",
-        description: `enhance ${player.name} to LV.${roster.playerLv + 1}`,
+        description: `enhance ${player.name} to LV.${roster.level + 1}`,
       },
     });
 
@@ -60,7 +60,7 @@ router.put("/LvUp/:playerId", authSigninMiddleware, async (req, res, next) => {
   });
 
   return res.status(200).json({
-    message: `${cashDatasets.amount}를 소모하여 ${player.name}의 LV이 ${newRoster.playerLv}로 강화되었습니다.`,
+    message: `${cashDatasets.amount}를 소모하여 ${player.name}의 LV이 ${newRoster.level}로 강화되었습니다.`,
   });
 });
 

@@ -34,13 +34,13 @@ router.get("/rank", async (req, res, next) => {
     }
 
     await prisma.gameRankings.update({
-        data: {
-          winningRate: (winCount / playRecords.length) * 100,
-        },
-        where: {
-          rankingId: rank[key].rankingId,
-        },
-      });
+      data: {
+        winningRate: (winCount / playRecords.length) * 100,
+      },
+      where: {
+        rankingId: rank[key].rankingId,
+      },
+    });
   }
 
   const newRank = await prisma.gameRankings.findMany({
@@ -51,8 +51,8 @@ router.get("/rank", async (req, res, next) => {
       rankScore: true,
       playRecords: true,
     },
-     orderBy: {rankScore: "desc" }
-  })
+    orderBy: { rankScore: "desc" },
+  });
   // 정렬 되어 있는 rank에서 key 값을 뽑음 => 순서대로 랭킹 정렬
   let saveRankings = [];
 
@@ -62,10 +62,9 @@ router.get("/rank", async (req, res, next) => {
       const rankInfo = newRank[key];
       saveRankings.push([ranking + 1, rankInfo]);
     }
-  
+
     return res.status(200).json({ data: saveRankings });
-  },1000)
-  
+  }, 1000);
 });
 
 router.get("/userRank", authSigninMiddleware, async (req, res, next) => {

@@ -45,8 +45,6 @@ router.post("/soccer", authSigninMiddleware, async (req, res, next) => {
         },
       });
 
-      console.log(matchingList);
-
       if (!matchingList) {
         console.log("매칭을 찾는 중입니다.");
         setInterval(() => interval, 1000);
@@ -54,6 +52,11 @@ router.post("/soccer", authSigninMiddleware, async (req, res, next) => {
 
       // 매칭 상대 하나 정하기
       const randomMatching = Math.floor(Math.random() * matchingList.length);
+
+      if(!matchingList[randomMatching]) {
+        console.log("매칭을 찾는 중입니다.");
+        setInterval(() => interval, 1000);
+      }
 
       const vsMatching = await prisma.matching.findFirst({
         where: {
@@ -90,11 +93,16 @@ router.post("/soccer", authSigninMiddleware, async (req, res, next) => {
         clearInterval(interval);
       }
     }, 1000);
+
+    setTimeout(() => {
+      console.log('정산 중입니다.');
+    }, 1000);
+    
+    return res.status(200).json({ message: "축구 게임 끝" });
+
   } catch (err) {
     next(err);
   }
-
-  return res.status(200).json({ message: "축구 게임 끝" });
 });
 
 async function gameStart(
@@ -106,28 +114,28 @@ async function gameStart(
 ) {
   // 매칭 상대와 게임하기
   // 매칭 상대의 팀 정보와 내 팀 정보를 불러와서 비교하기
-  const myTeam = await prisma.squads.findMany({
+  const mySquad = await prisma.squads.findMany({
     where: {
       accountId: accountId,
     },
   });
 
-  const vsTeam = await prisma.squads.findMany({
+  const vsSquad = await prisma.squads.findMany({
     where: {
       accountId: vsRanking.accountId,
     },
   });
 
-  // console.log(vsTeam[0].accountId);
-  // console.log(myTeam[0].accountId);
-  if (!myTeam || !vsTeam) {
+  // console.log(vsSquad[0].accountId);
+  // console.log(mySquad[0].accountId);
+  if (!mySquad || !vsSquad) {
     return res.status(400).json({ errorMessage: `구성된 팀이 없어요.` });
   }
 
   // 나의 팀 전투력 측정
-  let myTeamPower = 0;
-  for (let key in myTeam) {
-    const { playerId } = myTeam[key];
+  let mySquadPower = 0;
+  for (let key in mySquad) {
+    const { playerId } = mySquad[key];
 
     const player = await prisma.players.findFirst({
       where: { playerId: playerId },
@@ -136,24 +144,25 @@ async function gameStart(
     const roster = await prisma.rosters.findFirst({
       where: {
         playerId: playerId,
-        accountId: myTeam[0].accountId,
+        accountId: mySquad[0].accountId,
       },
     });
 
     // 밑에 0.3 , 0.5는 예시
     // 플레이어 레벨당 1개의 스텟이 1씩 오른다.
-    myTeamPower +=
-      player.speed * 0.3 +
-      player.acceleration * 0.3 +
-      player.shootingFinish * 0.5 +
-      player.shootingPower * 0.3 +
-      player.pass * 0.3;
+    mySquadPower +=
+      player.PAC * 0.3 +
+      player.DEF * 0.3 +
+      player.SHO * 0.5 +
+      player.DRI * 0.3 +
+      player.PAS * 0.3 +
+      player.PHY * 0.3;
   }
 
   // 상대 팀 전투력 측정
-  let vsTeamPower = 0;
-  for (let key in vsTeam) {
-    const { playerId } = vsTeam[key];
+  let vsSquadPower = 0;
+  for (let key in vsSquad) {
+    const { playerId } = vsSquad[key];
 
     const player = await prisma.players.findFirst({
       where: { playerId: playerId },
@@ -162,27 +171,29 @@ async function gameStart(
     const roster = await prisma.rosters.findFirst({
       where: {
         playerId: playerId,
-        accountId: vsTeam[0].accountId,
+        accountId: vsSquad[0].accountId,
       },
     });
 
     // 밑에 0.3 , 0.5는 예시
-    vsTeamPower +=
-      player.speed * 0.3 +
-      player.acceleration * 0.3 +
-      player.shootingFinish * 0.5 +
-      player.shootingPower * 0.3 +
-      player.pass * 0.3;
+    vsSquadPower +=
+    player.PAC * 0.3 +
+    player.DEF * 0.3 +
+    player.SHO * 0.5 +
+    player.DRI * 0.3 +
+    player.PAS * 0.3 +
+    player.PHY * 0.3;
   }
 
   let myResult = "";
   let vsResult = "";
-  let comparePower = (myTeamPower + vsTeamPower) * Math.random();
-  if (comparePower < myTeamPower) {
+  
+  let comparePower = (mySquadPower + vsSquadPower) * Math.random();
+  if (comparePower < mySquadPower) {
     // 나의 팀이 승리
     myResult = "win";
     vsResult = "lose";
-  } else if (comparePower === myTeamPower) {
+  } else if (comparePower === mySquadPower) {
     // 동점
     myResult, (vsResult = "draw");
   } else {
@@ -196,8 +207,8 @@ async function gameStart(
       data: {
         playRecords:
           myRanking.playRecords !== null
-            ? myRanking.playRecords + " " + [vsTeam[0].accountId, myResult]
-            : [vsTeam[0].accountId, myResult],
+            ? myRanking.playRecords + " " + [vsSquad[0].accountId, myResult]
+            : [vsSquad[0].accountId, myResult],
         rankScore:
           myResult === "win"
             ? myRanking.rankScore + 50
@@ -214,8 +225,8 @@ async function gameStart(
       data: {
         playRecords:
           vsRanking.playRecords !== null
-            ? vsRanking.playRecords + " " + [myTeam[0].accountId, vsResult]
-            : [myTeam[0].accountId, vsResult],
+            ? vsRanking.playRecords + " " + [mySquad[0].accountId, vsResult]
+            : [mySquad[0].accountId, vsResult],
         rankScore:
           vsResult === "win"
             ? vsRanking.rankScore + 50

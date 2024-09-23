@@ -1,5 +1,5 @@
 import express from "express";
-import cash from "./src/routers/cash.js";
+import cash from "./src/routers/Cash.js";
 import login from "./src/routers/Login.js";
 import soccer from "./src/routers/soccer.js";
 import lvUp from "./src/routers/playerLvUp.js";

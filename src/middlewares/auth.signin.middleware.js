@@ -19,7 +19,7 @@ export default async function (req, res, next) {
     if (!saveId) throw new Error("로그인이 필요합니다.");
 
     const { userId } = saveId;
-    const account = await prisma.Accounts.findFirst({
+    const account = await prisma.accounts.findFirst({
       where: { userId: userId },
     });
 

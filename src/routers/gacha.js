@@ -31,14 +31,13 @@ router.post(
     }
 
     const roster = await prisma.rosters.findFirst({
-        where: {
-            playerId: wantedPlayer.playerId,
-            accountId: accountId,
-        }
-      })
+      where: {
+        playerId: wantedPlayer.playerId,
+        accountId: accountId,
+      },
+    });
 
     await prisma.$transaction(async (tx) => {
-      
       await tx.cashDatasets.create({
         data: {
           accountId: accountId,
@@ -48,26 +47,25 @@ router.post(
         },
       });
 
-      if(roster) {
+      if (roster) {
         await tx.rosters.update({
-            data: {
-                amount: roster.amount + 1,
-            },
-            where: {
-                playerId: wantedPlayer.playerId,
-                accountId: accountId,
-                rosterId: roster.rosterId,
-            }
-        })
-      }
-      else {
+          data: {
+            amount: roster.amount + 1,
+          },
+          where: {
+            playerId: wantedPlayer.playerId,
+            accountId: accountId,
+            rosterId: roster.rosterId,
+          },
+        });
+      } else {
         await tx.rosters.create({
-            data: {
-              accountId: accountId,
-              playerId: wantedPlayer.playerId,
-            },
-          });
-      }  
+          data: {
+            accountId: accountId,
+            playerId: wantedPlayer.playerId,
+          },
+        });
+      }
     });
 
     return res.status(200).json({ message: `카드 영입에 성공했습니다.` });

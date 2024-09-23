@@ -1,58 +1,50 @@
 import { prisma } from './prisma/index.js';
 
-export async function getClubs(accountId) {
+export async function getSquads(accountId) {
   try {
-    const clubs = await prisma.teams.findMany({
+    const squads = await prisma.squads.findMany({
       where: { accountId: +accountId },
     });
 
-    return clubs;
+    return squads;
   } catch (err) {
-    console.error('팀 조회 오류:', err);
+    console.error('스쿼드 조회 오류:', err);
     return [];
   }
 }
 
 export async function calculateStats(accountId) {
   try {
-    const teamPlayers = await prisma.teams.findMany({
+    const squadPlayers = await prisma.squads.findMany({
       where: { accountId: +accountId },
       include: { player: true },
     });
 
-    if (teamPlayers.length === 0) {
+    if (squadPlayers.length === 0) {
       console.error('선수를 찾을 수 없습니다.');
       return null;
     }
 
     const totalStats = {
-      speed: 0,
-      acceleration: 0,
-      shootingFinish: 0,
-      shootingPower: 0,
-      pass: 0,
-      defense: 0,
-      stamina: 0,
-      agility: 0,
-      balance: 0,
-      gk: 0,
+      PAC: 0,
+      SHO: 0,
+      PAS: 0,
+      DRI: 0,
+      DEF: 0,
+      PHY: 0,
     };
 
     // 스쿼드 모든 선수의 스탯을 합산
-    teamPlayers.forEach((team) => {
+    squadPlayers.forEach((squad) => {
       // 스쿼드에 포함된 선수
-      const player = team.player;
+      const player = squad.player;
 
-      totalStats.speed += player.speed;
-      totalStats.acceleration += player.acceleration;
-      totalStats.shootingFinish += player.shootingFinish;
-      totalStats.shootingPower += player.shootingPower;
-      totalStats.pass += player.pass;
-      totalStats.defense += player.defense;
-      totalStats.stamina += player.stamina;
-      totalStats.agility += player.agility;
-      totalStats.balance += player.balance;
-      totalStats.gk += player.gk;
+      totalStats.PAC += player.PAC;
+      totalStats.SHO += player.SHO;
+      totalStats.PAS += player.PAS;
+      totalStats.DRI += player.DRI;
+      totalStats.DEF += player.DEF;
+      totalStats.PHY += player.PHY;
     });
 
     return totalStats;
@@ -64,38 +56,36 @@ export async function calculateStats(accountId) {
 
 export async function calculateAttackStats(accountId) {
   try {
-    const teamPlayers = await prisma.teams.findMany({
+    const squadPlayers = await prisma.squads.findMany({
       where: { accountId: +accountId },
       include: { player: true },
     });
 
-    if (teamPlayers.length === 0) {
+    if (squadPlayers.length === 0) {
       console.error('선수를 찾을 수 없습니다.');
       return null;
     }
 
     const attackStats = {
-      speed: 0,
-      acceleration: 0,
-      shootingFinish: 0,
-      shootingPower: 0,
-      stamina: 0,
-      agility: 0,
-      balance: 0,
+      PAC: 0,
+      SHO: 0,
+      PAS: 0,
+      DRI: 0,
+      DEF: 0,
+      PHY: 0,
     };
 
     // 스쿼드 모든 선수의 스탯을 합산
-    teamPlayers.forEach((team) => {
+    squadPlayers.forEach((squad) => {
       // 스쿼드에 포함된 선수
-      const player = team.player;
+      const player = squad.player;
 
-      attackStats.speed += player.speed;
-      attackStats.acceleration += player.acceleration;
-      attackStats.shootingFinish += player.shootingFinish;
-      attackStats.shootingPower += player.shootingPower;
-      attackStats.stamina += player.stamina;
-      attackStats.agility += player.agility;
-      attackStats.balance += player.balance;
+      attackStats.PAC += player.PAC * 0.2;
+      attackStats.SHO += player.SHO * 0.3;
+      attackStats.PAS += player.PAS * 0.15;
+      attackStats.DRI += player.DRI * 0.2;
+      attackStats.DEF += player.DEF * 0.05;
+      attackStats.PHY += player.PHY * 0.1;
     });
 
     return attackStats;
@@ -107,36 +97,36 @@ export async function calculateAttackStats(accountId) {
 
 export async function calculateDefenseStats(accountId) {
   try {
-    const teamPlayers = await prisma.teams.findMany({
+    const squadPlayers = await prisma.squads.findMany({
       where: { accountId: +accountId },
       include: { player: true },
     });
 
-    if (teamPlayers.length === 0) {
+    if (squadPlayers.length === 0) {
       console.error('선수를 찾을 수 없습니다.');
       return null;
     }
 
     const defenseStats = {
-      speed: 0,
-      acceleration: 0,
-      defense: 0,
-      stamina: 0,
-      agility: 0,
-      balance: 0,
+      PAC: 0,
+      SHO: 0,
+      PAS: 0,
+      DRI: 0,
+      DEF: 0,
+      PHY: 0,
     };
 
     // 스쿼드 모든 선수의 스탯을 합산
-    teamPlayers.forEach((team) => {
+    squadPlayers.forEach((squad) => {
       // 스쿼드에 포함된 선수
-      const player = team.player;
+      const player = squad.player;
 
-      defenseStats.speed += player.speed;
-      defenseStats.acceleration += player.acceleration;
-      defenseStats.defense += player.defense;
-      defenseStats.stamina += player.stamina;
-      defenseStats.agility += player.agility;
-      defenseStats.balance += player.balance;
+      defenseStats.PAC += player.PAC * 0.15;
+      defenseStats.SHO += player.SHO * 0.05;
+      defenseStats.PAS += player.PAS * 0.1;
+      defenseStats.DRI += player.DRI * 0.05;
+      defenseStats.DEF += player.DEF * 0.4;
+      defenseStats.PHY += player.PHY * 0.25;
     });
 
     return defenseStats;

@@ -7,7 +7,7 @@ import AccountsRouter from './routes/accounts.router.js';
 import CashRouter from './routes/cash.router.js';
 import PlayersRouter from './routes/players.router.js';
 import RostersRouter from './routes/rosters.router.js';
-import ClubsRouter from './routes/clubs.router.js';
+import SquadsRouter from './routes/squads.router.js';
 import MatchRouter from './routes/match.router.js';
 import LogMiddleware from './middlewares/log.middleware.js';
 import ErrorHandlingMiddleware from './middlewares/error-handling.middleware.js';
@@ -26,7 +26,7 @@ app.use(cors());
 app.use(LogMiddleware);
 app.use(express.json());
 
-app.use('/api', [AccountsRouter, CashRouter, PlayersRouter, RostersRouter, ClubsRouter, MatchRouter]);
+app.use('/api', [AccountsRouter, CashRouter, PlayersRouter, RostersRouter, SquadsRouter, MatchRouter]);
 app.use(ErrorHandlingMiddleware);
 
 app.get('/', (req, res) => {

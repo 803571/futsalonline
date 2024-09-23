@@ -59,7 +59,7 @@ router.post('/sign-up', async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const signUp = await prisma.$transaction(async (tx) => {
-      // 1. 계정 생성
+      // 계정 생성
       const newAccount = await tx.accounts.create({
         data: {
           userId: userId,
@@ -69,13 +69,22 @@ router.post('/sign-up', async (req, res, next) => {
         },
       });
 
-      // 2. 캐시 충전
+      // 캐시 충전
       await tx.cashDatasets.create({
         data: {
           accountId: +newAccount.accountId,
           amount: 10000,
           type: 'charge',
           description: '회원가입 보너스!',
+        },
+      });
+
+      // 랭킹 초기화
+      await tx.gameRankings.create({
+        data: {
+          accountId: +newAccount.accountId,
+          winningRate: 0,
+          rankScore: 1500
         },
       });
 

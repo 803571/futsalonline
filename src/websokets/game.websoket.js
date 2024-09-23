@@ -2,20 +2,13 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import url from 'url';
 import { WebSocketServer } from 'ws';
-import portUtil from '../utils/portUtils.js';
 import { startGame } from '../utils/gameUtils.js';
-import { getClubs } from '../utils/prismaUtils.js';
+import { getSquads } from '../utils/prismaUtils.js';
 
 dotenv.config();
 
 function setUpGameWebSoket(server, port) {
   const wss = new WebSocketServer({ server });
-
-  try {
-    console.log('현재 포트 상태 : ' + portUtil.getPortStatus());
-  } catch (err) {
-    console.log(err);
-  }
 
   let players = [];
   let attackerInterval;
@@ -48,11 +41,11 @@ function setUpGameWebSoket(server, port) {
       console.log(`유저ID ${accountId} - 유저 ${userId}가 게임 서버에 접속했습니다!`);
 
       // accountId를 이용하여 스쿼드 정보 조회
-      const teams = await getClubs(accountId);
+      const squads = await getSquads(accountId);
 
       // 스쿼드 없으면 웹소켓 종료
-      if (teams.length === 0) {
-        ws.send('팀 정보가 없습니다.');
+      if (squads.length === 0) {
+        ws.send('스쿼드 정보가 없습니다.');
         ws.close();
         return;
       }

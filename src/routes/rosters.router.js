@@ -36,34 +36,19 @@ router.post('/gacha/:accountId', async (req, res, next) => {
       // 랜덤으로 선수 선택
       const randomPlayer = players[Math.floor(Math.random() * players.length)];
 
-      const existingRoster = await tx.rosters.findFirst({
-        where: {
-          accountId: account.accountId,
-          playerId: randomPlayer.playerId,
+      // 로스터에 선수 추가
+      await tx.rosters.create({
+        data: {
+          accountId: +account.accountId,
+          playerId: +randomPlayer.playerId,
+          level: 1,
         },
       });
-
-      if (existingRoster) {
-        // 로스터에 존재 시
-        await tx.rosters.update({
-          where: { rosterId: existingRoster.rosterId },
-          data: { amount: { increment: 1 } },
-        });
-      } else {
-        // 로스터에 없을 시
-        await tx.rosters.create({
-          data: {
-            accountId: account.accountId,
-            playerId: randomPlayer.playerId,
-            amount: 1,
-          },
-        });
-      }
 
       // 캐시 차감
       await tx.cashDatasets.create({
         data: {
-          accountId: Number(accountId),
+          accountId: +accountId,
           amount: 1000,
           type: 'spend',
           description: 'player gacha',
@@ -116,7 +101,7 @@ router.get('/rosters/:accountId', async (req, res, next) => {
       name: roster.player.name,
       height: roster.player.height,
       weight: roster.player.weight,
-      amount: roster.amount,
+      level: roster.level,
     }));
     const responseRosters = responsePlayers.sort((a, b) => a.playerId - b.playerId);
 

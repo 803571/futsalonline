@@ -16,16 +16,12 @@ router.get('/players', async (req, res, next) => {
         name: true,
         height: true,
         weight: true,
-        speed: true,
-        acceleration: true,
-        shootingFinish: true,
-        shootingPower: true,
-        pass: true,
-        defense: true,
-        stamina: true,
-        agility: true,
-        balance: true,
-        gk: true,
+        PAC: true,
+        SHO: true,
+        PAS: true,
+        DRI: true,
+        DEF: true,
+        PHY: true,
       },
       orderBy: {
         // 플레이어 ID로 정렬
@@ -50,16 +46,12 @@ router.get('/players', async (req, res, next) => {
 // 가장 높은 능력치를 찾는 함수
 function getMaxStats(player) {
   const stats = {
-    speed: player.speed,
-    acceleration: player.acceleration,
-    shootingFinish: player.shootingFinish,
-    shootingPower: player.shootingPower,
-    pass: player.pass,
-    defense: player.defense,
-    stamina: player.stamina,
-    agility: player.agility,
-    balance: player.balance,
-    gk: player.gk,
+    PAC: player.PAC,
+    SHO: player.SHO,
+    PAS: player.PAS,
+    DRI: player.DRI,
+    DEF: player.DEF,
+    PHY: player.PHY,
   };
 
   // 상위 3개 스탯 찾기
@@ -88,16 +80,12 @@ router.get('/players/:playerId', async (req, res, next) => {
         name: true,
         height: true,
         weight: true,
-        speed: true,
-        acceleration: true,
-        shootingFinish: true,
-        shootingPower: true,
-        pass: true,
-        defense: true,
-        stamina: true,
-        agility: true,
-        balance: true,
-        gk: true,
+        PAC: true,
+        SHO: true,
+        PAS: true,
+        DRI: true,
+        DEF: true,
+        PHY: true,
       },
     });
 

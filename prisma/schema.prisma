@@ -25,8 +25,8 @@ model Accounts {
 
   // Accounts : Rosters => 1 : N
   rosters Rosters[]
-  // Accounts : Teams => 1 : N
-  Team Teams[]
+  // Accounts : Squards => 1 : N
+  squard Squards[]
   // Accounts : CashDatasets => 1 : N
   cashDatasets CashDatasets[]
   // Accounts : GameRankings => 1 : N
@@ -42,24 +42,20 @@ model Players {
   height          Int      @map("height") // 키
   weight          Int      @map("weight") // 몸무게
 
-  speed           Int      @map("speed") // 속력
-  acceleration    Int      @map("acceleration") // 가속력
-  shootingFinish  Int      @map("shootingFinish") // 골 결정력
-  shootingPower   Int      @map("shootingPower") // 슛 파워
-  pass            Int      @map("pass") // 패스 스탯
-  defense         Int      @map("defense") // 수비력
-  stamina         Int      @map("stamina") // 스태미너
-  agility         Int      @map("agility") // 민첩성
-  balance         Int      @map("balance") // 밸런스
-  gk              Int      @map("gk") // 골키퍼 능력
+  PAC Int @map("PAC") // 속력
+  SHO Int @map("SHO") // 슛
+  PAS Int @map("PAS") // 패스
+  DRI Int @map("DRI") // 드리블
+  DEF Int @map("DEF") // 수비
+  PHY Int @map("PHY") // 피지컬
 
   createdAt     DateTime @default(now()) @map("createdAt")
   updatedAt     DateTime @updatedAt() @map("updatedAt")
 
   // Players : Rosters => 1 : N
   rosters Rosters[]
-  // Players : Teams => 1 : N
-  teams Teams[]
+  // Players : Squards => 1 : N
+  squard Squards[]
 
   @@map("Players")
 }
@@ -69,7 +65,7 @@ model Rosters {
   rosterId      Int      @id @default(autoincrement()) @map("rosterId")
   accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
   playerId      Int      @map("playerId") // Players 테이블 참조 FK
-  amount        Int      @default(1) @map("amount") // 카드 개수
+  level         Int      @default(1) @map("level") // 강화 레벨
 
   // Accounts 테이블과 관계 설정
   account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
@@ -79,12 +75,13 @@ model Rosters {
   @@map("Rosters")
 }
 
-// 팀 스쿼드 : 장착 장비 테이블과 유사
-model Teams {
-  teamId        Int      @id @default(autoincrement()) @map("teamId")
+// 스쿼드 : 장착 장비 테이블과 유사
+model Squards {
+  squardId      Int      @id @default(autoincrement()) @map("squardId")
   accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
   playerId      Int      @map("playerId") // Players 테이블 참조 FK
   position      String   @map("position") // 포지션
+  level         Int      @default(1) @map("level") // 강화 레벨
 
   createdAt     DateTime @default(now()) @map("createdAt")
   updatedAt     DateTime @updatedAt() @map("updatedAt")
@@ -94,7 +91,7 @@ model Teams {
   // Players 테이블과 관계 설정
   player Players @relation(fields: [playerId], references: [playerId], onDelete: Cascade)
 
-  @@map("Teams")
+  @@map("Squards")
 }
 
 model CashDatasets {
@@ -117,7 +114,7 @@ model GameRankings {
   accountId       Int     @map("accountId") // Accounts 테이블 참조 FK
   winningRate     Float   @default(0) @map("winningRate") // 승률
   rankScore       Int     @default(1500) @map("rankScore") // 랭킹 점수
-  playRecords     Json    @map("playRecords") // 경기 결과(경기 상대, 승무패, 시작 시간, 끝 시간(시작시간+1))
+  playRecords     Json?   @map("playRecords") // 경기 결과(경기 상대, 승무패, 시작 시간, 끝 시간(시작시간+1))
 
   createdAt     DateTime @default(now()) @map("createdAt")
   updatedAt     DateTime @updatedAt() @map("updatedAt")

@@ -16,14 +16,13 @@ if (port) {
   const ws = new WebSocket(`ws://localhost:${port}?token=${token}`);
 
   ws.onopen = () => {
-    console.log('Connected to the game server on port', port);
+    console.log(port, '포트에 게임 서버를 연결합니다.');
   };
 
   ws.onmessage = (event) => {
-    console.log('Game server message:', event.data);
-    addLog('Game server message: ' + event.data);
+    addLog(event.data);
 
-    if (event.data.includes('게임이 종료되었습니다')) {
+    if (event.data.includes('로비로 돌아갑니다...')) {
       const getToken = sessionStorage.getItem('jwtToken');
 
       fetch('http://localhost:3333/api/game-end', {
@@ -42,7 +41,7 @@ if (port) {
           }, 1000);
         })
         .catch((err) => {
-          console.error('Error calling endGame API:', err);
+          console.error('game-end API 에러:', err);
         });
     }
   };

@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 import url from 'url';
 import { WebSocketServer } from 'ws';
 import portUtil from '../utils/portUtils.js';
-import { prisma } from '../utils/prisma/index.js';
+import { startGame } from '../utils/gameUtils.js';
+import { getClubs } from '../utils/prismaUtils.js';
 
 dotenv.config();
 
@@ -18,7 +19,6 @@ function setUpGameWebSoket(server, port) {
 
   let players = [];
   let attackerInterval;
-  let currentAttacker = null;
 
   wss.on('connection', (ws, req) => {
     const queryParams = new url.URL(req.url, 'http://localhost').searchParams;
@@ -63,7 +63,7 @@ function setUpGameWebSoket(server, port) {
 
       // 1:1 매칭이므로 2명이 존재해야 게임 로직 실행
       if (players.length === 2) {
-        await startGame(port);
+        await startGame(port, players, attackerInterval);
       }
 
       ws.on('close', () => {
@@ -80,134 +80,6 @@ function setUpGameWebSoket(server, port) {
       });
     });
   });
-
-  async function startGame(port) {
-    if (players.length !== 2) return;
-
-    const playerA = players[0];
-    const playerB = players[1];
-
-    // 각 플레이어의 JWT 토큰에서 accountId를 추출
-    const accountAId = jwt.decode(playerA.token).accountId;
-    const accountBId = jwt.decode(playerB.token).accountId;
-
-    // 각 플레이어의 팀 스탯 계산
-    const teamAStats = await calculateStats(accountAId);
-    const teamBStats = await calculateStats(accountBId);
-
-    if (!teamAStats || !teamBStats) {
-      console.error('스탯을 불러오는 중 오류가 발생했습니다.');
-      return;
-    }
-
-    // 각 팀의 총합 스탯을 계산하여 비교 (모든 스탯 합계)
-    const totalStatsA = Object.values(teamAStats).reduce((acc, stat) => acc + stat, 0);
-    const totalStatsB = Object.values(teamBStats).reduce((acc, stat) => acc + stat, 0);
-
-    console.log(`유저 ${accountAId} 총합 스탯: ${totalStatsA}`);
-    console.log(`유저 ${accountBId} 총합 스탯: ${totalStatsB}`);
-
-    attackerInterval = setInterval(() => {
-      const newAttacker = players[Math.floor(Math.random() * players.length)];
-
-      /*
-      // 로직 변경
-
-
-      */
-      players.forEach((player) => {
-        if (player === newAttacker) {
-          player.send('공격 중!');
-        } else {
-          player.send('수비 중!');
-        }
-      });
-
-      currentAttacker = newAttacker;
-    }, 3000);
-
-    setTimeout(() => {
-      clearInterval(attackerInterval);
-      endGame(port);
-    }, 10 * 1000); // 1분 - 60
-  }
-
-  async function endGame(port) {
-    players.forEach((player) => {
-      player.send(`게임이 종료되었습니다. 로비로 돌아갑니다.`);
-      player.send(`redirect:3333?token=${player.token}`);
-    });
-
-    setTimeout(() => {
-      players.forEach((player) => {
-        player.close();
-      });
-
-      players = [];
-    }, 1000); // 1초 후 종료
-  }
-
-  async function getClubs(accountId) {
-    try {
-      const clubs = await prisma.teams.findMany({
-        where: { accountId: +accountId },
-      });
-
-      return clubs;
-    } catch (err) {
-      console.error('팀 조회 오류:', err);
-      return [];
-    }
-  }
-
-  async function calculateStats(accountId) {
-    try {
-      const teamPlayers = await prisma.teams.findMany({
-        where: { accountId: +accountId },
-        include: { player: true },
-      });
-  
-      if (teamPlayers.length === 0) {
-        console.error('선수를 찾을 수 없습니다.');
-        return null;
-      }
-
-      const totalStats = {
-        speed: 0,
-        acceleration: 0,
-        shootingFinish: 0,
-        shootingPower: 0,
-        pass: 0,
-        defense: 0,
-        stamina: 0,
-        agility: 0,
-        balance: 0,
-        gk: 0,
-      };
-  
-      // 스쿼드 모든 선수들의 스탯을 합산
-      teamPlayers.forEach((team) => {
-         // 스쿼드에 포함된 선수
-        const player = team.player;
-  
-        totalStats.speed += player.speed;
-        totalStats.acceleration += player.acceleration;
-        totalStats.shootingFinish += player.shootingFinish;
-        totalStats.shootingPower += player.shootingPower;
-        totalStats.pass += player.pass;
-        totalStats.defense += player.defense;
-        totalStats.stamina += player.stamina;
-        totalStats.agility += player.agility;
-        totalStats.balance += player.balance;
-        totalStats.gk += player.gk;
-      });
-
-      return totalStats;
-    } catch (error) {
-      console.error('스탯 계산 중 오류 발생:', error);
-      return null;
-    }
-  }
 }
 
 export { setUpGameWebSoket };

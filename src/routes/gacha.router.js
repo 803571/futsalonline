@@ -46,45 +46,18 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
 
       const statPlayer = [];
 
-      // 25% 확률로 전체 선수에서 packId에 해당하는 stat의 최솟값 + 차이값(4분의 1/ 2/ 3/ 4)
-
-      // packId 스탯기반 하위 100%
+      // 25%확률로 packId 스탯기반 상위 25%의 선수
       if (randomNumber > 75) {
         players.forEach((player) => {
-          if (player[packId] >= min) {
+          if (player[packId] >= min && min + difference * (3 / 4)) {
             statPlayer.push(player.playerId);
           }
         });
       }
-      // packId 스탯기반 하위 75%
-      if (randomNumber > 50 && randomNumber <= 75)
+      // 75%확률로 전체선수
+      if (randomNumber <= 75)
         players.forEach((player) => {
-          if (
-            player[packId] >= min &&
-            player[packId] <= min + difference * (3 / 4)
-          ) {
-            statPlayer.push(player.playerId);
-          }
-        });
-      // packId 스탯기반 하위 50%
-      if (randomNumber > 25 && randomNumber <= 50)
-        players.forEach((player) => {
-          if (
-            player[packId] >= min &&
-            player[packId] <= min + difference * (2 / 4)
-          ) {
-            statPlayer.push(player.playerId);
-          }
-        });
-      // packId 스탯기반 하위 25%
-      if (randomNumber <= 25)
-        players.forEach((player) => {
-          if (
-            player[packId] >= min &&
-            player[packId] <= min + difference * (1 / 4)
-          ) {
-            statPlayer.push(player.playerId);
-          }
+          statPlayer.push(player.playerId);
         });
 
       // 스탯기반으로 담은 선수들을 다시 한번 더 랜덤확률로 획득

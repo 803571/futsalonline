@@ -14,69 +14,115 @@ datasource db {
 }
 
 model Accounts {
-  accountId Int    @id @default(autoincrement()) @map("accountId")
-  id        String @unique @map("id")
-  password  String @map("password")
-  name      String @map("name")
-  age       Int    @map("age")
-  cash      Int    @default(10000) @map("cash")
+  accountId       Int      @id @default(autoincrement()) @map("accountId")
+  userId          String   @unique @map("userId") // 아이디
+  password        String   @map("password") // 비밀번호
+  name            String?  @map("name") // 이름
+  age             Int?     @map("age") // 나이
 
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt() @map("updatedAt")
+  createdAt       DateTime @default(now()) @map("createdAt")
+  updatedAt       DateTime @updatedAt() @map("updatedAt")
 
-  clubs Clubs?
+  // Accounts : Rosters => 1 : N
+  rosters Rosters[]
+  // Accounts : Squads => 1 : N
+  squad Squads[]
+  // Accounts : CashDatasets => 1 : N
+  cashDatasets CashDatasets[]
+  // Accounts : GameRankings => 1 : N
+  gameRankings GameRankings[]
 
   @@map("Accounts")
 }
 
-model Clubs {
-  clubId      Int    @id @default(autoincrement()) @map("clubId")
-  accountId   Int    @unique @map("accountId")
-  nickname    String @unique @map("nickname")
-  starters    Json   @map("starters")
+// 선수 카드
+model Players {
+  playerId        Int      @id @default(autoincrement()) @map("playerId")
+  name            String   @unique @map("name") // 선수 이름 : 유일
+  height          Int      @map("height") // 키
+  weight          Int      @map("weight") // 몸무게
 
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt() @map("updatedAt")
+  PAC Int @map("PAC") // 속력
+  SHO Int @map("SHO") // 슛
+  PAS Int @map("PAS") // 패스
+  DRI Int @map("DRI") // 드리블
+  DEF Int @map("DEF") // 수비
+  PHY Int @map("PHY") // 피지컬
 
-  account     Accounts      @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
-  ActualCards ActualCards[]
+  createdAt     DateTime @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt() @map("updatedAt")
 
-  @@map("Clubs")
+  // Players : Rosters => 1 : N
+  rosters Rosters[]
+  // Players : Squads => 1 : N
+  squad Squads[]
+
+  @@map("Players")
 }
 
-model Cards {
-  cardId      Int    @id @default(autoincrement()) @map("cardId")
-  name        String @map("name")
-  height      Int    @map("height")
-  weight      Int    @map("weight")
-  nationality String @map("nationality")
-  position    String @map("position")
+// 보유 선수 : 인벤토리 역할
+model Rosters {
+  rosterId      Int      @id @default(autoincrement()) @map("rosterId")
+  accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
+  playerId      Int      @map("playerId") // Players 테이블 참조 FK
+  level         Int      @default(1) @map("level") // 강화 레벨
 
-  PAC Int @map("PAC")
-  SHO Int @map("SHO")
-  PAS Int @map("PAS")
-  DRI Int @map("DRI")
-  DEF Int @map("DEF")
-  PHY Int @map("PHY")
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  // Items 테이블과 관계 설정
+  player Players @relation(fields: [playerId], references: [playerId], onDelete: Cascade)
 
-  createdAt   DateTime      @default(now()) @map("createdAt")
-  updatedAt   DateTime      @updatedAt() @map("updatedAt")
-  ActualCards ActualCards[]
-
-  @@map("Cards")
+  @@map("Rosters")
 }
 
-model ActualCards {
-  actualcardId Int @id @default(autoincrement()) @map("actualcardId")
-  cardId       Int @map("cardId")
-  clubId       Int @map("clubId")
-  enhance      Int @map("enhance")
+// 스쿼드 : 장착 장비 테이블과 유사
+model Squads {
+  squadId      Int      @id @default(autoincrement()) @map("squadId")
+  accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
+  playerId      Int      @map("playerId") // Players 테이블 참조 FK
+  position      String   @map("position") // 포지션
+  level         Int      @default(1) @map("level") // 강화 레벨
 
-  createdAt DateTime @default(now()) @map("createdAt")
-  updatedAt DateTime @updatedAt() @map("updatedAt")
+  createdAt     DateTime @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt() @map("updatedAt")
 
-  card Cards @relation(fields: [cardId], references: [cardId], onDelete: Cascade)
-  club Clubs @relation(fields: [clubId], references: [clubId], onDelete: Cascade)
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  // Players 테이블과 관계 설정
+  player Players @relation(fields: [playerId], references: [playerId], onDelete: Cascade)
 
-  @@map("ActualCards")
+  @@map("Squads")
+}
+
+// 캐시 데이터
+model CashDatasets {
+  cashDatasetId Int      @id @default(autoincrement()) @map("cashDatasetId")
+  accountId     Int      @map("accountId") // Accounts 테이블 참조 FK
+  amount        Int      @map("amount") // 거래 금액
+  type          String   @map("type") // 거래 유형
+  description   String   @map("description") // 거래 설명
+
+  createdAt     DateTime @default(now()) @map("createdAt")
+
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+
+  @@map("CashDatasets")
+}
+
+// 랭킹 데이터
+model GameRankings {
+  rankingId       Int     @id @default(autoincrement()) @map("rankingId")
+  accountId       Int     @map("accountId") // Accounts 테이블 참조 FK
+  winningRate     Float   @default(0) @map("winningRate") // 승률
+  rankScore       Int     @default(1500) @map("rankScore") // 랭킹 점수
+  playRecords     Json?   @map("playRecords") // 경기 결과(경기 상대, 승무패, 시작 시간, 끝 시간(시작시간+1))
+
+  createdAt     DateTime @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt() @map("updatedAt")
+
+  // Accounts 테이블과 관계 설정
+  account Accounts @relation(fields: [accountId], references: [accountId])
+
+  @@map("GameRankings")
 }

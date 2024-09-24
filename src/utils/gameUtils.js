@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { calculateStats } from './prismaUtils.js';
-import { gameState } from './state/gamestate.js';
+import { gameState } from './state/gameState.js';
 
 let currentAttacker = null;
 
@@ -24,11 +24,7 @@ export async function startGame(port, players) {
     const attackProbability = Math.random();
 
     // 공격자 선정
-    if (attackProbability < attackProbabilityA) {
-      currentAttacker = playerA;
-    } else {
-      currentAttacker = playerB;
-    }
+    currentAttacker = attackProbability < attackProbabilityA ? playerA : playerB;
 
     players.forEach((player) => {
       // 플레이어의 JWT 토큰에서 userId 추출
@@ -41,9 +37,9 @@ export async function startGame(port, players) {
       }
     });
 
-    // 공격 성공 확률 (예: 30% 확률로 골 성공)
+    // 공격 성공 확률
     const goalProbability = Math.random();
-    const goalSuccessRate = 0.3; // 30% 확률로 골 성공
+    const goalSuccessRate = 0.3;
 
     if (goalProbability < goalSuccessRate) {
       players.forEach((player) => {
@@ -68,7 +64,7 @@ export async function startGame(port, players) {
   setTimeout(async () => {
     clearInterval(gameState.attackerInterval);
     await endGame(port, players, scoreA, scoreB, startTime);
-  }, 60 * 1000); // 1분 - 60
+  }, 10 * 1000); // 1분 - 60
 }
 
 async function endGame(port, players, scoreA, scoreB, startTime) {
@@ -85,9 +81,15 @@ async function endGame(port, players, scoreA, scoreB, startTime) {
     resultB = 'draw';
   }
 
+  // 스코어 출력
+  players.forEach((player) => {
+    const userId = jwt.decode(player.token).userId;
+    player.send(`경기 종료! 스코어: 유저 ${userId} - ${scoreA} : ${scoreB}`);
+  });
+
   // API 호출을 위한 정보
   const matchResultA = {
-    accountId: jwt.decode(players[0].token).userId,
+    accountId: jwt.decode(players[0].token).accountId,
     opponent: jwt.decode(players[1].token).userId,
     result: resultA,
     startTime: startTime,
@@ -95,7 +97,7 @@ async function endGame(port, players, scoreA, scoreB, startTime) {
   };
 
   const matchResultB = {
-    accountId: jwt.decode(players[1].token).userId,
+    accountId: jwt.decode(players[1].token).accountId,
     opponent: jwt.decode(players[0].token).userId,
     result: resultB,
     startTime: startTime,
@@ -108,14 +110,14 @@ async function endGame(port, players, scoreA, scoreB, startTime) {
 
   // API 호출
   await Promise.all([
-    fetch(`http://localhost:3333/match/result`, {
+    fetch(`http://localhost:3333/api/match/result`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(matchResultA),
     }),
-    fetch(`http://localhost:3333/match/result`, {
+    fetch(`http://localhost:3333/api/match/result`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -129,8 +131,8 @@ async function endGame(port, players, scoreA, scoreB, startTime) {
       player.close();
     });
 
-    players = [];
-  }, 1000); // 1초 후 종료
+    players.length = 0;
+  }, 10 * 1000); // 10초 후 종료
 }
 
 async function gameLogic(playerA, playerB) {

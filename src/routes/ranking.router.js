@@ -6,9 +6,14 @@ const router = express.Router();
 /**
  * 랭킹 점수 변동 API
  * @route POST /match/result
+ * @param {number} - accountId : 계정 ID
+ * @param {string} - opponent : 상대 유저ID
+ * @param {string} - result : 결과 (win, draw, lose)
+ * @param {Date} - startTime : 경기 시작 시간
+ * @param {Date} - endTime : 경기 종료 시간
  * @returns {object} - 성공/실패 메시지,
  */
-router.get('/match/result', async (req, res, next) => {
+router.post('/match/result', async (req, res, next) => {
   try {
     const { accountId, opponent, result, startTime, endTime } = req.body;
 
@@ -98,6 +103,7 @@ router.get('/ranking', async (req, res, next) => {
 /**
  * 전적 조회 API
  * @route GET /ranking/:accountId
+ * @param {number} - accountId : 계정 ID
  * @returns {object} - 성공/실패 메시지, 랭킹 목록
  */
 router.get('/ranking/:accountId', async (req, res, next) => {
@@ -120,20 +126,22 @@ router.get('/ranking/:accountId', async (req, res, next) => {
 
     // playRecords에서 전적 가져오기
     const matches = ranking.playRecords?.matches || [];
-    const formattedMatches = matches.map((match) => ({
-      opponent: match.opponent,
-      result: match.result,
-      startTime: match.startTime,
-      endTime: match.endTime,
-    }));
+    const formattedMatches = matches
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .map((match) => ({
+        opponent: match.opponent,
+        result: match.result,
+        startTime: match.startTime,
+        endTime: match.endTime,
+      }));
 
-    const formattedRankings = {
+    const responseRankings = {
       rankScore: ranking.rankScore,
       winningRate: ranking.winningRate,
       matches: formattedMatches,
     };
 
-    return res.status(200).json({ message: '전적 조회 성공!', ranking: formattedRankings });
+    return res.status(200).json({ message: '전적 조회 성공!', ranking: responseRankings });
   } catch (err) {
     next(err);
   }

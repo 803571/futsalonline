@@ -87,14 +87,15 @@ router.get('/ranking', async (req, res, next) => {
       },
     });
 
-    const formattedRankings = rankings.map((ranking) => ({
+    const responseRankings = rankings.map((ranking, index) => ({
+      rank: index + 1,
       accountId: ranking.accountId,
       winningRate: ranking.winningRate,
       rankScore: ranking.rankScore,
       record: ranking.playRecords?.record || {},
     }));
 
-    return res.status(200).json({ message: '랭킹 조회 성공!', ranking: formattedRankings });
+    return res.status(200).json({ message: '랭킹 조회 성공!', ranking: responseRankings });
   } catch (err) {
     next(err);
   }

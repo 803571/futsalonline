@@ -64,10 +64,10 @@ export function setUpLobbyWebSoket(server) {
           if (!waitingList.some((player) => player.ws === ws)) {
             waitingList.push({ ws, accountId });
           }
-
           // 유저 대기열 업데이트
           await updateWaitingList(waitingList);
 
+          // 매칭 시작
           await startMatching(waitingList);
         }
       });

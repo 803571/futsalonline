@@ -1,24 +1,21 @@
 import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import { getAccountCash } from '../utils/cashUtils.js'
+import authSignIn from '../middlewares/auth.signin.middleware.js';
 
 const router = express.Router();
 
-// 로그인 인증, 유효성 추가
-router.post('/cash/charge/:accountId', async (req, res, next) => {
-  const { accountId } = req.params;
+/**
+ * 캐시 충전 API
+ * @route POST /cash/charge - 로그인 인증 필요
+ * @param {number} amount - 캐시 충전 금액
+ * @returns {object} - 성공 or 실패 메시지 / 캐시 충전 정보
+ */
+router.post('/cash/charge', authSignIn, async (req, res, next) => {
   const { amount } = req.body;
+  const account = req.account;
 
   try {
-    const account = await prisma.accounts.findUnique({
-      where: { accountId: +accountId },
-    });
-
-    // 계정 체크
-    if (!account) {
-      return res.status(404).json({ errorMessage: '해당 계정을 찾을 수 없습니다.' });
-    }
-
     // 금액 체크
     if (!amount || amount <= 0) {
       return res.status(400).json({ errorMessage: '충전할 금액을 제대로 입력해주세요.' });
@@ -26,7 +23,7 @@ router.post('/cash/charge/:accountId', async (req, res, next) => {
 
     const chargeCash = await prisma.cashDatasets.create({
       data: {
-        accountId: +accountId,
+        accountId: +account.accountId,
         amount: amount,
         type: 'charge',
         description: `${amount} 캐시 충전!`,
@@ -39,24 +36,19 @@ router.post('/cash/charge/:accountId', async (req, res, next) => {
   }
 });
 
-// 로그인 인증 추가
-router.get('/cash/get/:accountId', async (req, res, next) => {
-  const { accountId } = req.params;
+/**
+ * 캐시 조회 API
+ * @route POST /cash/get - 로그인 인증 필요
+ * @returns {object} - 성공 or 실패 메시지 / 캐시 조회
+ */
+router.get('/cash/get', authSignIn, async (req, res, next) => {
+  const account = req.account;
 
   try {
-    const account = await prisma.accounts.findUnique({
-      where: { accountId: +accountId },
-    });
-
-    // 계정 체크
-    if (!account) {
-      return res.status(404).json({ errorMessage: '해당 계정을 찾을 수 없습니다.' });
-    }
-
-    const accountCash = await getAccountCash(accountId);
+    const accountCash = await getAccountCash(account.accountId);
 
     const cashResponse = {
-      accountId: accountId,
+      accountId: +account.accountId,
       cash: accountCash,
     };
 

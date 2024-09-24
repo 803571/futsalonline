@@ -64,7 +64,7 @@ export async function startGame(port, players) {
   setTimeout(async () => {
     clearInterval(gameState.attackerInterval);
     await endGame(port, players, scoreA, scoreB, startTime);
-  }, 10 * 1000); // 1분 - 60
+  }, 60 * 1000); // 1분 - 60
 }
 
 async function endGame(port, players, scoreA, scoreB, startTime) {

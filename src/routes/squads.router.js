@@ -60,7 +60,7 @@ router.post('/squad/:accountId', authSignIn, async (req, res, next) => {
 
     console.log(selectedPlayers);
 
-    if (selectedPlayers.length <= 4) {
+    if (selectedPlayers.length !== 4) {
       return res.status(400).json({
         errorMessage: '선택된 선수 중 일부가 로스터에 없습니다.',
       });

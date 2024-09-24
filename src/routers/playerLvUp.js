@@ -30,9 +30,11 @@ router.put("/LvUp/:playerId/:level", authSigninMiddleware, async (req, res, next
   });
 
   const randomDiv = Math.floor(Math.random() * (10 - 1 + 1) + 1);
-  const failEP = ((roster.level + 1 % 5) === 0)? Math.floor(roster.level * 10 / randomDiv): Math.floor(roster.level * 10 / 2); 
+  const failEP = ((roster.level + 1) % 5 === 0)? Math.floor(100 / randomDiv): Math.floor(100 / 2); 
   const randomEP = Math.floor((Math.random() * (100 - 1 + 1)) + 1); // 1 ~ 100 중 랜덤,
   
+  console.log(failEP);
+  console.log(randomEP);
   if(randomEP < failEP) {
      // 강화에 실패하였습니다.
      const cashDatasets = await prisma.cashDatasets.create({

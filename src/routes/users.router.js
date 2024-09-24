@@ -84,7 +84,7 @@ router.post("/sign-in", async (req, res, next) => {
             "jwt-secret"
         );
 
-        res.cookie("authorization", 'Bearer ${token}');
+        res.header("authorization", 'Bearer ${token}');
         return res.status(200).json({message:"로그인 성공"});   
     }   catch (error) {
         console.error("로그인 중 에러 발생:", error);

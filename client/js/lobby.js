@@ -39,6 +39,10 @@ if (!token) {
     if (message.startsWith('redirect:')) {
       // URL에서 포트 추출, 게임 서버로 리디렉션
       const port = message.split(':')[1];
+
+      // 게임 서버로 리디렉션 전에 로비서버 WebSocket 연결 종료
+      ws.close();
+
       window.location.href = `http://localhost:${port}/game.html?port=${port}&token=${token}`;
     }
   };

@@ -87,19 +87,21 @@ export function setUpLobbyWebSoket(server) {
     });
 
     async function startMatching() {
-      // 초기 오차 범위 설정
+      // 랭킹 점수 오차 범위
       let currentRange = 0;
+
       // 매칭 시작
       gameState.matchInterval = setInterval(async () => {
-        const rankScores = await getRankScores(); // 플레이어의 랭킹 점수 가져오기
+        // 유저 rankScore 가져오기
+        const rankScores = await getRankScores();
 
-        // 플레이어 점수가 없는 경우 처리
+        // 두 명 이하일 경우(rankScore 없을 때)
         if (rankScores.length < 2) {
           clearInterval(gameState.matchInterval);
           return;
         }
 
-        // 시간이 지날수록 오차 범위 증가
+        // 매칭 안 잡히면 오차 범위 증가
         currentRange += 50;
 
         // 매칭 로직
@@ -118,12 +120,14 @@ export function setUpLobbyWebSoket(server) {
               if (availablePort !== null) {
                 console.log("매칭 실행됨 " + waitingList.length);
                 portUtil.setPortStatus(availablePort, 2);
+
                 player1.send(`redirect:${availablePort}`);
                 player2.send(`redirect:${availablePort}`);
 
-                // 매칭 완료 후 대기 리스트에서 제거 (i 이후 j 이므로 j부터 제거)
-                waitingList.splice(j, 1); // player2 제거
-                waitingList.splice(i, 1); // player1 제거
+                // 매칭 후 대기 리스트에서 유저를 제거
+                waitingList.splice(waitingList.indexOf(player1), 1);
+                waitingList.splice(waitingList.indexOf(player2), 1);
+
                 // 유저 대기열 업데이트
                 updateWaitingList();
 
@@ -133,8 +137,9 @@ export function setUpLobbyWebSoket(server) {
                   return;
                 }
 
-                i--; // 다음 매칭을 위해 인덱스 조정
-                break; // 매칭이 완료되었으므로 더 이상의 매칭을 중단
+                // 매칭이 이뤄졌으므로 인덱스 조정 후 해당 매칭은 종료
+                i--;
+                break;
               } else {
                 player1.send('모든 게임 서버가 가득 찼습니다. 잠시만 기다려주세요...');
                 player2.send('모든 게임 서버가 가득 찼습니다. 잠시만 기다려주세요...');
@@ -142,9 +147,10 @@ export function setUpLobbyWebSoket(server) {
             }
           }
         }
-      }, 5000); // 5초마다 매칭 체크
+      }, 5000); // 5초 interval
     }
 
+    // rankScore 가져오는 로직
     async function getRankScores() {
       const rankScores = await Promise.all(
         waitingList.map(async (player) => {
@@ -153,17 +159,17 @@ export function setUpLobbyWebSoket(server) {
               accountId: +player.accountId,
             },
             select: {
-              rankScore: true, // rankScore만 선택
+              rankScore: true,
             },
           });
           return {
             player,
-            rankScore: ranking ? ranking.rankScore : null, // 랭킹 점수 가져오기
+            rankScore: ranking ? ranking.rankScore : null,
           };
         })
       );
 
-      return rankScores.filter((rank) => rank.rankScore !== null); // 유효한 점수만 반환
+      return rankScores.filter((rank) => rank.rankScore !== null);
     }
 
     // 대기열 업데이트 함수

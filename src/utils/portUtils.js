@@ -24,6 +24,7 @@ class PortUtil extends Singleton {
     if (!this.gamePorts) {
       throw new Error("gamePorts 배열이 초기화되지 않았습니다.");
     }
+    
     for (const port of this.gamePorts) {
       if (this.portStatus[port] < 2) {
         return port;

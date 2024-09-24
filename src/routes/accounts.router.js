@@ -84,7 +84,7 @@ router.post('/sign-up', async (req, res, next) => {
         data: {
           accountId: +newAccount.accountId,
           winningRate: 0,
-          rankScore: 1500
+          rankScore: 1000
         },
       });
 

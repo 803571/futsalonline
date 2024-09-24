@@ -30,8 +30,8 @@ model Accounts {
   squad Squads[]
   // Accounts : CashDatasets => 1 : N
   cashDatasets CashDatasets[]
-  // Accounts : GameRankings => 1 : N
-  gameRankings GameRankings[]
+  // Accounts : GameRankings => 1 : 1
+  gameRanking GameRankings?
 
   @@map("Accounts")
 }
@@ -81,7 +81,6 @@ model Squads {
   squadId      Int      @id @default(autoincrement()) @map("squadId")
   accountId    Int      @map("accountId") // Accounts 테이블 참조 FK
   playerId     Int      @map("playerId") // Players 테이블 참조 FK
-  level        Int      @default(1) @map("level") // 강화 레벨
   position     String   @map("position") // 포지션
 
   createdAt    DateTime @default(now()) @map("createdAt")
@@ -114,9 +113,9 @@ model CashDatasets {
 // 랭킹 관련 테이블
 model GameRankings {
   rankingId       Int     @id @default(autoincrement()) @map("rankingId")
-  accountId       Int     @map("accountId") // Accounts 테이블 참조 FK
-  winningRate     Float   @default(0) @map("winningRate") // 승률
-  rankScore       Int     @default(1500) @map("rankScore") // 랭킹 점수
+  accountId       Int     @unique @map("accountId") // Accounts 테이블 참조 FK
+  winningRate     Int     @default(0) @map("winningRate") // 승률
+  rankScore       Int     @default(1000) @map("rankScore") // 랭킹 점수
   playRecords     Json?   @map("playRecords") // 경기 결과(경기 상대, 승무패, 시작 시간, 끝 시간(시작시간+1))
 
   createdAt     DateTime @default(now()) @map("createdAt")

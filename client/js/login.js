@@ -8,8 +8,8 @@ loginForm.addEventListener('submit', async (event) => {
 
   try {
     // 로그인 API
-    // 54.180.236.142
-    const response = await fetch('http://localhost:3333/api/sign-in', {
+    // localhost
+    const response = await fetch('http://54.180.236.142:3333/api/sign-in', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,8 +30,8 @@ loginForm.addEventListener('submit', async (event) => {
       // JWT 토큰, 세션 스토리지 저장
       sessionStorage.setItem('jwtToken', data.token);
       // 로그인 성공 시 로비 페이지로 이동
-      //window.location.href = 'http://54.180.236.142:3333/lobby.html';
-      window.location.href = 'http://localhost:3333/lobby.html';
+      window.location.href = 'http://54.180.236.142:3333/lobby.html';
+      //window.location.href = 'http://localhost:3333/lobby.html';
     } else {
       alert(data.errorMessage || '로그인 실패');
     }

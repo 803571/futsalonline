@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { calculateStats } from './prismaUtils.js';
+import { gameState } from './state/gamestate.js';
 
 let currentAttacker = null;
 
-export async function startGame(port, players, attackerInterval) {
+export async function startGame(port, players) {
   if (players.length !== 2) return;
 
   const playerA = players[0];
@@ -12,7 +13,13 @@ export async function startGame(port, players, attackerInterval) {
   // 게임 로직을 거쳐 A 유저 공격비율 할당
   let attackProbabilityA = await gameLogic(playerA, playerB);
 
-  attackerInterval = setInterval(() => {
+  // 스코어
+  let scoreA = 0;
+  let scoreB = 0;
+  let startTime = new Date().toISOString();
+
+  // 3초 인터벌
+  gameState.attackerInterval = setInterval(() => {
     // 공격 랜덤값
     const attackProbability = Math.random();
 
@@ -41,8 +48,15 @@ export async function startGame(port, players, attackerInterval) {
     if (goalProbability < goalSuccessRate) {
       players.forEach((player) => {
         const userId = jwt.decode(player.token).userId;
-        
+
         if (player === currentAttacker) {
+          // 스코어 계산
+          if (player === playerA) {
+            scoreA++;
+          } else {
+            scoreB++;
+          }
+
           player.send(`⚽️ 유저 ${userId} 골!!!`);
         } else {
           player.send(`❌ 유저 ${userId} 실점...`);
@@ -51,16 +65,64 @@ export async function startGame(port, players, attackerInterval) {
     }
   }, 3000);
 
-  setTimeout(() => {
-    clearInterval(attackerInterval);
-    endGame(port, players);
+  setTimeout(async () => {
+    clearInterval(gameState.attackerInterval);
+    await endGame(port, players, scoreA, scoreB, startTime);
   }, 60 * 1000); // 1분 - 60
 }
 
-async function endGame(port, players) {
+async function endGame(port, players, scoreA, scoreB, startTime) {
+  // 승무패 결정
+  let resultA, resultB;
+  if (scoreA > scoreB) {
+    resultA = 'win';
+    resultB = 'lose';
+  } else if (scoreA < scoreB) {
+    resultA = 'lose';
+    resultB = 'win';
+  } else {
+    resultA = 'draw';
+    resultB = 'draw';
+  }
+
+  // API 호출을 위한 정보
+  const matchResultA = {
+    accountId: jwt.decode(players[0].token).userId,
+    opponent: jwt.decode(players[1].token).userId,
+    result: resultA,
+    startTime: startTime,
+    endTime: new Date().toISOString(),
+  };
+
+  const matchResultB = {
+    accountId: jwt.decode(players[1].token).userId,
+    opponent: jwt.decode(players[0].token).userId,
+    result: resultB,
+    startTime: startTime,
+    endTime: new Date().toISOString(),
+  };
+
   players.forEach((player) => {
     player.send(`로비로 돌아갑니다...`);
   });
+
+  // API 호출
+  await Promise.all([
+    fetch(`http://localhost:3333/match/result`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(matchResultA),
+    }),
+    fetch(`http://localhost:3333/match/result`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(matchResultB),
+    }),
+  ]);
 
   setTimeout(() => {
     players.forEach((player) => {

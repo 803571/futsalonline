@@ -86,7 +86,7 @@ router.get('/ranking', async (req, res, next) => {
       accountId: ranking.accountId,
       winningRate: ranking.winningRate,
       rankScore: ranking.rankScore,
-      record: ranking.playRecords.record,
+      record: ranking.playRecords?.record || {},
     }));
 
     return res.status(200).json({ message: '랭킹 조회 성공!', ranking: formattedRankings });

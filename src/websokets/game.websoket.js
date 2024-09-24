@@ -4,6 +4,7 @@ import url from 'url';
 import { WebSocketServer } from 'ws';
 import { startGame } from '../utils/gameUtils.js';
 import { getSquads } from '../utils/prismaUtils.js';
+import { gameState } from '../utils/state/gameState.js'
 
 dotenv.config();
 

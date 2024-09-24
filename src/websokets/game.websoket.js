@@ -4,7 +4,7 @@ import url from 'url';
 import { WebSocketServer } from 'ws';
 import { startGame } from '../utils/gameUtils.js';
 import { getSquads } from '../utils/prismaUtils.js';
-import { gameState } from '../utils/state/gameState.js'
+import { gameState } from '../utils/state/gameState.js';
 
 dotenv.config();
 
@@ -12,7 +12,6 @@ function setUpGameWebSoket(server, port) {
   const wss = new WebSocketServer({ server });
 
   let players = [];
-  let attackerInterval;
 
   wss.on('connection', (ws, req) => {
     const queryParams = new url.URL(req.url, 'http://localhost').searchParams;
@@ -57,7 +56,7 @@ function setUpGameWebSoket(server, port) {
 
       // 1:1 매칭이므로 2명이 존재해야 게임 로직 실행
       if (players.length === 2) {
-        await startGame(port, players, attackerInterval);
+        await startGame(port, players);
       }
 
       ws.on('close', () => {
@@ -65,7 +64,7 @@ function setUpGameWebSoket(server, port) {
         players = players.filter((player) => player !== ws);
 
         if (players.length === 1) {
-          clearInterval(attackerInterval);
+          clearInterval(gameState.attackerInterval);
 
           players.forEach((player) => {
             player.send('상대 유저가 이탈하였습니다...');

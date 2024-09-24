@@ -8,27 +8,18 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
   const { accountId } = req.user;
   const { packId } = req.params;
 
-  const account = await prisma.accounts.findFirst({ where: { accountId } });
-
-  if (account.cash < 1000) {
-    return res.status(400).json({ message: '보유 캐시가 부족합니다.' });
-  }
-
-  // cash 차감
-  const spentAccount = await prisma.accounts.update({
-    where: {
-      accountId,
-    },
+  const details = await prisma.cashDatasets.create({
     data: {
-      cash: account.cash - 1000,
+      accountId,
+      amount: 1000,
+      type: 'buy',
+      description: `${packId}팩 구매`,
     },
   });
 
-  // 포지션 구분해서 담기
-  const cards = await prisma.cards.findMany({
-    where: { position: packId },
+  const players = await prisma.players.findMany({
     select: {
-      cardId: true,
+      playerId: true,
       name: true,
       PAC: true,
       SHO: true,
@@ -39,173 +30,67 @@ router.post('/gacha/:packId', authMiddleware, async (req, res, next) => {
     },
   });
 
-  let stat = [];
-  if (packId === 'FW') {
-    stat = cards.map((item) => item.PAC + item.SHO);
-  }
+  // packId stat만 추출
+  const stat = players.map((player) => player[packId]);
 
-  if (packId === 'MF') {
-    stat = cards.map((item) => item.PAS + item.DRI);
-  }
-
-  if (packId === 'DF') {
-    stat = cards.map((item) => item.DEF + item.PHY);
-  }
-  const min = Math.min(...stat);
-  const max = Math.max(...stat);
+  const min = Math.min(...stat); // stat 최소값
+  const max = Math.max(...stat); // stat 최대값
   const difference = max - min;
-
   const randomNumber = Math.floor(Math.random() * 100) + 1;
-  const cardsOVR = [];
 
-  if (packId === 'FW') {
-    if (randomNumber > 75) {
-      cards.forEach((item) => {
-        if (item.PAC + item.SHO >= min) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 75%
-    if (randomNumber > 50 && randomNumber <= 75) {
-      cards.forEach((item) => {
-        if (
-          item.PAC + item.SHO >= min &&
-          item.PAC + item.SHO <= min + difference * (3 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 50%
-    if (randomNumber > 25 && randomNumber <= 50) {
-      cards.forEach((item) => {
-        if (
-          item.PAC + item.SHO >= min &&
-          item.PAC + item.SHO <= min + difference * (2 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 25%
-    if (randomNumber <= 25) {
-      cards.forEach((item) => {
-        if (
-          item.PAC + item.SHO >= min &&
-          item.PAC + item.SHO <= min + difference * (1 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
+  const statPlayer = [];
+
+  if (randomNumber > 75) {
+    players.forEach((player) => {
+      if (player[packId] >= min) {
+        statPlayer.push(player.playerId);
+      }
+    });
   }
 
-  if (packId === 'MF') {
-    if (randomNumber > 75) {
-      cards.forEach((item) => {
-        if (item.PAS + item.DRI >= min) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 75%
-    if (randomNumber > 50 && randomNumber <= 75) {
-      cards.forEach((item) => {
-        if (
-          item.PAS + item.DRI >= min &&
-          item.PAS + item.DRI <= min + difference * (3 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 50%
-    if (randomNumber > 25 && randomNumber <= 50) {
-      cards.forEach((item) => {
-        if (
-          item.PAS + item.DRI >= min &&
-          item.PAS + item.DRI <= min + difference * (2 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 25%
-    if (randomNumber <= 25) {
-      cards.forEach((item) => {
-        if (
-          item.PAS + item.DRI >= min &&
-          item.PAS + item.DRI <= min + difference * (1 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-  }
+  if (randomNumber > 50 && randomNumber <= 75)
+    players.forEach((player) => {
+      if (
+        player[packId] >= min &&
+        player[packId] <= min + difference * (3 / 4)
+      ) {
+        statPlayer.push(player.playerId);
+      }
+    });
 
-  if (packId === 'DF') {
-    if (randomNumber > 75) {
-      cards.forEach((item) => {
-        if (item.DEF + item.PHY >= min) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 75%
-    if (randomNumber > 50 && randomNumber <= 75) {
-      cards.forEach((item) => {
-        if (
-          item.DEF + item.PHY >= min &&
-          item.DEF + item.PHY <= min + difference * (3 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 50%
-    if (randomNumber > 25 && randomNumber <= 50) {
-      cards.forEach((item) => {
-        if (
-          item.DEF + item.PHY >= min &&
-          item.DEF + item.PHY <= min + difference * (2 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-    // // 포지션 하위 25%
-    if (randomNumber <= 25) {
-      cards.forEach((item) => {
-        if (
-          item.DEF + item.PHY >= min &&
-          item.DEF + item.PHY <= min + difference * (1 / 4)
-        ) {
-          cardsOVR.push(item.cardId);
-        }
-      });
-    }
-  }
+  if (randomNumber > 25 && randomNumber <= 50)
+    players.forEach((player) => {
+      if (
+        player[packId] >= min &&
+        player[packId] <= min + difference * (2 / 4)
+      ) {
+        statPlayer.push(player.playerId);
+      }
+    });
 
-  const randomNumber2 = Math.floor(Math.random() * cardsOVR.length);
+  if (randomNumber <= 25)
+    players.forEach((player) => {
+      if (
+        player[packId] >= min &&
+        player[packId] <= min + difference * (1 / 4)
+      ) {
+        statPlayer.push(player.playerId);
+      }
+    });
 
-  const prize = await prisma.cards.findFirst({
-    where: { cardId: cardsOVR[randomNumber2] },
-    select: {
-      cardId: true,
-      name: true,
-      PAC: true,
-      SHO: true,
-      PAS: true,
-      DRI: true,
-      DEF: true,
-      PHY: true,
+  const randomNumber2 = Math.floor(Math.random() * statPlayer.length);
+
+  const prize = await prisma.rosters.create({
+    data: {
+      accountId: accountId,
+      playerid: statPlayer[randomNumber2],
     },
   });
 
   return res.status(200).json({
-    card: prize,
-    balance: spentAccount.cash,
+    details,
+    accountId,
+    statPlayer: statPlayer[randomNumber2],
   });
 });
 

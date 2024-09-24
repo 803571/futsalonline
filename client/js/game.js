@@ -9,11 +9,11 @@ if (token) {
   sessionStorage.setItem('jwtToken', token);
 } else {
   console.error('JWT 토큰이 없습니다. 다시 로그인하세요.');
-  window.location.href = 'http://localhost:3333/login.html';
+  window.location.href = 'http://54.180.236.142:3333/login.html';
 }
 
 if (port) {
-  const ws = new WebSocket(`ws://localhost:${port}?token=${token}`);
+  const ws = new WebSocket(`ws://54.180.236.142:${port}?token=${token}`);
 
   ws.onopen = () => {
     console.log(port, '포트에 게임 서버를 연결합니다.');
@@ -25,7 +25,7 @@ if (port) {
     if (event.data.includes('로비로 돌아갑니다...')) {
       const getToken = sessionStorage.getItem('jwtToken');
 
-      fetch('http://localhost:3333/api/game-end', {
+      fetch('http://54.180.236.142:3333/api/game-end', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

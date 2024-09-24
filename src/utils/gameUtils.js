@@ -110,14 +110,14 @@ async function endGame(port, players, scoreA, scoreB, startTime) {
 
   // API 호출
   await Promise.all([
-    fetch(`http://localhost:3333/api/match/result`, {
+    fetch(`http://54.180.236.142:3333/api/match/result`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(matchResultA),
     }),
-    fetch(`http://localhost:3333/api/match/result`, {
+    fetch(`http://54.180.236.142:3333/api/match/result`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

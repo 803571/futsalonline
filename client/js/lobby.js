@@ -9,7 +9,7 @@ let ws;
 const token = sessionStorage.getItem('jwtToken');
 if (!token) {
   alert('로그인이 필요합니다.');
-  window.location.href = 'http://localhost:3333/login.html';
+  window.location.href = 'http://54.180.236.142:3333/login.html';
 } else {
   // 기존 WebSocket 연결이 있을 경우 종료 - 방어코드
   if (ws && ws.readyState === WebSocket.OPEN) {
@@ -18,7 +18,7 @@ if (!token) {
   }
 
   // JWT 토큰을 쿼리 파라미터로 WebSocket에 전달
-  ws = new WebSocket(`ws://localhost:3333?token=${token}`);
+  ws = new WebSocket(`ws://54.180.236.142:3333?token=${token}`);
 
   ws.onmessage = (event) => {
     const message = event.data;
@@ -26,7 +26,7 @@ if (!token) {
 
     if (message === 'already_connected') {
       alert('이미 로그인된 계정입니다. 다시 로그인 해주세요.');
-      window.location.href = 'http://localhost:3333/login.html';
+      window.location.href = 'http://54.180.236.142:3333/login.html';
       return;
     }
 
@@ -43,7 +43,7 @@ if (!token) {
       // 게임 서버로 리디렉션 전에 로비서버 WebSocket 연결 종료
       ws.close();
 
-      window.location.href = `http://localhost:${port}/game.html?port=${port}&token=${token}`;
+      window.location.href = `http://54.180.236.142:${port}/game.html?port=${port}&token=${token}`;
     }
   };
 

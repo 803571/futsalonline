@@ -15,7 +15,7 @@ export function setUpLobbyWebSoket(server) {
   const activeConnections = {};
 
   wss.on('connection', (ws, req) => {
-    const queryParams = new url.URL(req.url, 'http://localhost').searchParams;
+    const queryParams = new url.URL(req.url, 'http://54.180.236.142').searchParams;
     const token = queryParams.get('token');
 
     if (!token) {

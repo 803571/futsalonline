@@ -11,6 +11,10 @@
 - `yarn start-lobby:pm2` : 로비 실행
 - `yarn start-game:pm2` : 게임 실행
 
+## 서버 재실행 (확인용)
+- `yarn restart-lobby:pm2` : 로비 실행
+- `yarn restart-game:pm2` : 게임 실행
+
 ## 서버 종료 (확인용)
 - `yarn delete-lobby:pm2` : 로비 종료
 - `yarn delete-game:pm2` : 게임 종료

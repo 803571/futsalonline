@@ -28,7 +28,8 @@ router.post('/game-end', (req, res, next) => {
         console.log(`${port} 포트 다시 사용 가능. 유저 ID: ${decoded.userId}`);
         res.status(200).json({
           message: '게임이 종료되었습니다. 로비로 이동합니다.',
-          redirectUrl: 'http://54.180.236.142:3333/lobby.html',
+          //redirectUrl: 'http://54.180.236.142:3333/lobby.html',
+          redirectUrl: 'http://localhost:3333/lobby.html',
         });
       } else {
         res.status(400).json({ errorMessage: '포트가 지정되지 않았습니다.' });

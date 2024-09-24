@@ -88,8 +88,6 @@ router.post('/squad/:accountId', authSignIn, async (req, res, next) => {
             accountId: +accountId,
             playerId: selection.playerId,
             position: selection.position,
-            level: 1,
-            // level: 레벨 선수 데이터에서 불러와서 할당하기
           },
         })
       )
@@ -101,7 +99,6 @@ router.post('/squad/:accountId', authSignIn, async (req, res, next) => {
         squadId: entry.squadId,
         playerId: entry.playerId,
         position: entry.position,
-        level: entry.level,
       })),
     });
   } catch (err) {
@@ -224,7 +221,6 @@ router.post('/squad/substitution/:accountId', authSignIn, async (req, res, next)
       player: {
         squadId: updatedPlayer.squadId,
         playerId: updatedPlayer.playerId,
-        level: updatedPlayer.level,
         position: updatedPlayer.position,
       },
     });
@@ -260,7 +256,6 @@ router.get('/squad/:accountId', async (req, res, next) => {
     const responseSquad = squadEntries.map((entry) => ({
       squadId: entry.squadId,
       playerId: entry.playerId,
-      level: entry.level,
       name: entry.player.name,
       position: entry.position,
     }));

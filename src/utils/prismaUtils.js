@@ -13,6 +13,28 @@ export async function getSquads(accountId) {
   }
 }
 
+// rankScore 가져오는 로직
+export async function getRankScores(waitingList) {
+  const rankScores = await Promise.all(
+    waitingList.map(async (player) => {
+      const ranking = await prisma.gameRankings.findUnique({
+        where: {
+          accountId: +player.accountId,
+        },
+        select: {
+          rankScore: true,
+        },
+      });
+      return {
+        player,
+        rankScore: ranking ? ranking.rankScore : null,
+      };
+    })
+  );
+
+  return rankScores.filter((rank) => rank.rankScore !== null);
+}
+
 export async function calculateStats(accountId) {
   try {
     const squadPlayers = await prisma.squads.findMany({

@@ -76,7 +76,7 @@ model Rosters {
   @@map("Rosters")
 }
 
-// 스쿼드 테이블 - 장착 장비 테이블과 유사
+// 스쿼드 테이블 - 로스터 테이블과 관계를 맺을 수 있지만 게임 구조에서 불필요하여 계정, 선수에 관계
 model Squads {
   squadId      Int      @id @default(autoincrement()) @map("squadId")
   accountId    Int      @map("accountId") // Accounts 테이블 참조 FK

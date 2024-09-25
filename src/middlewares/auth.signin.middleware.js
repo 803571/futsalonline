@@ -3,7 +3,7 @@ import {userDataClient} from "../utils/prisma/index/js";
 
 export default async function (req, res, next) {
     try {
-        const {authorization} = req.cookies;
+        const {authorization} = req.header;
         if (!authorization) throw new Error("토큰이 존재하지 않습니다.");
 
         const [tokenType, token] = authorization.split(" ");
@@ -18,7 +18,7 @@ export default async function (req, res, next) {
             where: {id: +userId},
         });        
         if (!user) {
-            res.clearCookie("authorization");
+            res.clearHeader("authorization");
             throw new Error("토큰 사용자가 존재하지 않습니다.");
         }
 
@@ -26,7 +26,7 @@ export default async function (req, res, next) {
 
         next();
     }   catch (error) {
-        res.clearCookie("authorization");
+        res.clearHeader("authorization");
         switch (error.name) {
             case "TokenExpiredError":
                 return res.status(401).json({message: "토큰이 만료되었습니다."});

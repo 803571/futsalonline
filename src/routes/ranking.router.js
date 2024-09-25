@@ -88,7 +88,7 @@ router.get('/ranking', async (req, res, next) => {
     });
 
     const responseRankings = rankings.map((ranking, index) => ({
-      rank: index + 1,
+      rank: `${index + 1} 등`,
       accountId: ranking.accountId,
       winningRate: ranking.winningRate,
       rankScore: ranking.rankScore,
